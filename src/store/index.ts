@@ -1,11 +1,8 @@
-import { combineReducers, createStore } from "redux";
-import loginReducer from "./login";
+import { createStore, applyMiddleware } from "redux";
+import reducer from "./reducer";
+import thunk from "redux-thunk";
 
+export const store = createStore(reducer, applyMiddleware(thunk));
 
-const reducers = combineReducers({
-  login: loginReducer
-});
-
-export const store = createStore(reducers);
-
-export type AppStore = ReturnType<typeof reducers>;
+export * from './actions';
+export * from './reducer';
