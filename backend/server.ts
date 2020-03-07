@@ -1,8 +1,6 @@
 import express from "express";
 import expressJWT from "express-jwt";
 import jwt from "jsonwebtoken";
-import {createProxyMiddleware} from "http-proxy-middleware";
-import { create } from "domain";
 
 const secret = "temporary-make-me-configurable";
 const app = express();
@@ -22,7 +20,4 @@ app.post("/login",function(req,res){
 	}
 	res.send(401).send(JSON.stringify({error: "incorrect username or password"}));
 });
-app.use(createProxyMiddleware(["/api"],{
-	target: "http://"
-})); // make the target url configurable
 app.listen(9001)

@@ -1,7 +1,7 @@
 import React from 'react';
 import {Card, FormGroup, InputGroup, Button, Callout} from '@blueprintjs/core';
 import './Login.scss';
-
+import {useDispatch} from 'react-redux';
 function AttemptLogin(username: string | undefined, 
 	password: string | undefined,
 	setError: React.Dispatch<React.SetStateAction<string | undefined>>){
@@ -14,6 +14,7 @@ export const Login: React.FC<{}> = () => {
 	const [username, setUsername] = React.useState<string>();
 	const [password, setPassword] = React.useState<string>();
 	const [error, setError] = React.useState<string>()
+	const dispatch = useDispatch();
 	const onchange = (dispatch:typeof setUsername) => (e: React.ChangeEvent<HTMLInputElement>) => {
 		setError(undefined);
 		dispatch(e.target.value);
