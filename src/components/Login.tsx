@@ -2,13 +2,6 @@ import React from 'react';
 import {Card, FormGroup, InputGroup, Button, Callout} from '@blueprintjs/core';
 import './Login.scss';
 import {useDispatch} from 'react-redux';
-function AttemptLogin(username: string | undefined, 
-	password: string | undefined,
-	setError: React.Dispatch<React.SetStateAction<string | undefined>>){
-	return function(){
-		setError("There is no backend yet")
-	}
-}
 
 export const Login: React.FC<{}> = () => {
 	const [username, setUsername] = React.useState<string>();
@@ -19,6 +12,7 @@ export const Login: React.FC<{}> = () => {
 		setError(undefined);
 		dispatch(e.target.value);
 	};
+	
 	return <Card className="LoginBox">
 		<h1 className={"bp3-heading"}>Login</h1>
 		<FormGroup label="Username" labelFor="username" labelInfo="(required)">
@@ -30,6 +24,6 @@ export const Login: React.FC<{}> = () => {
 		{typeof error === "string" ? <Callout intent="danger">
 			<h4 className="bp3-heading">Error</h4>{error}
 		</Callout>: ""}
-		<Button className="loginSubmit" type="submit" onClick={AttemptLogin(username, password, setError)}>Submit</Button>
+		<Button className="loginSubmit" type="submit" onClick={}>Submit</Button>
 	</Card>;
 }
