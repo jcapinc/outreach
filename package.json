@@ -35,7 +35,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "serve": "ts-node --project ./backend/tsconfig.json ./backend/server.ts",
+    "serve-dev": "nodemon --exec \"ts-node --project ./backend/tsconfig.json\" ./backend/server.ts"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -51,5 +53,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "ts-node": "^8.6.2"
   }
 }
