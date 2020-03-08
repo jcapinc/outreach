@@ -1,6 +1,11 @@
 import React from 'react';
 import { Action } from './';
 
+export interface LoginResponse{
+	jwt?: string;
+	error?: string
+}
+
 export function attemptlogin(
 	username: string, 
 	password: string
@@ -13,19 +18,19 @@ export function attemptlogin(
 				headers: {'Content-Type': 'application/json'},
 				body: JSON.stringify({username, password})
 			});
-			const stream = await result.body?.getReader().read();
-			const message = stream?.value.toString();
-			if(message === undefined) dispatch({
+			const response: LoginResponse | undefined = await result.json();
+			if(response === undefined) dispatch({
 				type: "LOGIN_ATTEMPT_FAILED",
 				message: "No response from login"
 			});
+
 			else if(result.ok) dispatch({
 				type: "LOGIN_ATTEMPT_SUCCESS",
 				response: result,
-				message
+				message: response.jwt
 			}); else dispatch({
 				type: "LOGIN_ATTEMPT_FAIL",
-				message: JSON.parse(message).error?.toString() || ""
+				message: response.error?.toString() || ""
 			})
 		}
 		catch(e){

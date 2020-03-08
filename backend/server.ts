@@ -15,10 +15,9 @@ app.post("/api/login", function(req,res){
 			return;
 		}
 		if(username === "jcapinc" && password === "hercules1"){
-			res.send(jwt.sign({
-				username: "jcapinc",
-				id:"1"
-			}, secret));
+			res.send(JSON.stringify({
+				jwt: jwt.sign({username: "jcapinc",id:"1"}, secret)
+			}));
 			return;
 		}
 	} catch(exception){
@@ -30,6 +29,10 @@ app.post("/api/login", function(req,res){
 app.get("/api/status", function(_,res){
 	res.send(JSON.stringify({loggedin:true}));
 });
+
+app.post("/login",(_,res) => {
+	res.status(400).send("WRONG.");
+})
 
 const port = 9001;
 app.listen(port);
