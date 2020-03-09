@@ -1,0 +1,11 @@
+type User {
+	guid: String,
+	username: String,
+	email: String,
+	firstname: String,
+	lastname: String
+}
+
+type Query {
+	getUser(guid: String): User
+}

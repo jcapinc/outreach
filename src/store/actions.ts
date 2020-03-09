@@ -38,3 +38,7 @@ export function attemptlogin(
 		}
 	}
 }
+
+export function logout(){
+	return { type: "LOGOUT"};
+}

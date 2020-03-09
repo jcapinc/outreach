@@ -1,6 +1,8 @@
 import express from "express";
 import expressJWT from "express-jwt";
 import jwt from "jsonwebtoken";
+import { connect, getSchema } from "./database";
+
 
 const secret = "temporary-make-me-configurable";
 const app = express();
@@ -32,8 +34,13 @@ app.get("/api/status", function(_,res){
 
 app.post("/login",(_,res) => {
 	res.status(400).send("WRONG.");
-})
+});
 
-const port = 9001;
-app.listen(port);
-console.log("listening on port 9001");
+(async () => {
+	const db = await connect();
+	app.use('/graphql', await getSchema(db));
+
+	const port = 9001;
+	app.listen(port);
+	console.log("listening on port 9001");
+})()
