@@ -3,7 +3,6 @@ import expressJWT from "express-jwt";
 import jwt from "jsonwebtoken";
 import { connect, getSchema } from "./database";
 
-
 const secret = "temporary-make-me-configurable";
 const app = express();
 app.use(expressJWT({secret}).unless({path:["/api/login"]}));
@@ -36,11 +35,19 @@ app.post("/login",(_,res) => {
 	res.status(400).send("WRONG.");
 });
 
-(async () => {
-	const db = await connect();
-	app.use('/graphql', await getSchema(db));
-
-	const port = 9001;
+const port = 9001;
 	app.listen(port);
 	console.log("listening on port 9001");
+
+(async () => {
+	try{
+		console.log("getting db");
+		const db = await connect();
+		console.log("getting schema");
+		const apollo = await getSchema(db);
+		apollo.applyMiddleware({app});
+	}
+	catch(err){
+		console.log(err);
+	}
 })()

@@ -2,8 +2,8 @@ import sqlite3 from 'sqlite3';
 import path from 'path';
 import util from 'util';
 import fs from 'fs';
-import graphqlHTTP from 'express-graphql';
-import { buildSchema } from 'graphql';
+import { IResolvers } from 'graphql-tools';
+import { ApolloServer } from 'apollo-server-express';
 
 const readFile = util.promisify(fs.readFile);
 
@@ -23,6 +23,15 @@ const defaultConnectionOptions: IConnectionOptions = {
 
 export async function connect(userOptions: Partial<IConnectionOptions> = defaultConnectionOptions){
 	const options = Object.assign(defaultConnectionOptions, userOptions);
+	const dbdir = path.dirname(options.dbpath.toString());
+	await new Promise(res => fs.stat(dbdir, async (err, stat) => {
+		if(err) fs.mkdir(dbdir, res);
+		if(!stat.isDirectory()){
+			if(stat.isFile()) await util.promisify(fs.unlink)(dbdir);
+			fs.mkdir(dbdir, res);
+		}
+	}));
+
 	const db = await new Promise<sqlite3.Database>((res,rej) => {
 		const db = new sqlite3.Database(options.dbpath.toString(), err => {
 			if(err) rej(err);
@@ -60,11 +69,11 @@ const defaultSchemaOptions: IGetSchemaOptions = {
 	schemaPath: path.join(__dirname, "schema.graphql")
 };
 
-export const GetSchemaRoot = (db: sqlite3.Database): Record<string, any> => ({
+export const GetSchemaRoot = (db: sqlite3.Database): IResolvers => ({
 	root: {
-		getUser: async ({guid}: {guid: string}) => {
+		getUser: ({guid}: {guid: string}) => {
 			const sql = "SELECT guid, username, email, firstname, lastname FROM users WHERE guid=?";
-			return await new Promise(function(res, rej){
+			return new Promise(function(res, rej){
 				db.get(sql, [guid], function(err, record){
 					if(err) rej(err);
 					res(record)
@@ -80,6 +89,9 @@ export const getSchema = async (
 ) => {
 	const options = Object.assign(defaultSchemaOptions, userOptions) as IGetSchemaOptions;
 	const rawSchema = await readFile(options.schemaPath);
-	const schema = buildSchema(rawSchema.toString());
-	return graphqlHTTP({schema, rootValue: GetSchemaRoot(db)})
+	console.log("pre-apollo");
+	return new ApolloServer({
+		typeDefs: rawSchema.toString(),
+		resolvers: GetSchemaRoot(db)
+	});
 };
