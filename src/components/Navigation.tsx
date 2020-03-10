@@ -11,7 +11,7 @@ export const Navigation: React.FC<{}> = () => {
 			<Navbar.Heading>Outreach</Navbar.Heading>
 			<Navbar.Divider />
 			<Link to="/"><Button className="bp3-minimal" icon="home" text="Home" /></Link>
-			<Link to="/flock"><Button className="bp3-minimal" icon="document" text="Flock" /></Link>
+			<Link to="/add-prayer"><Button className="bp3-minimal" icon="add" text="Add Prayer" /></Link>
 		</Navbar.Group>
 		<Navbar.Group align={Alignment.RIGHT}>
 			<Button className="bp3-minimal" icon="log-out" text="Logout" onClick={() => dispatch(logout())} />

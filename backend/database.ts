@@ -80,6 +80,16 @@ export const GetSchemaRoot = (db: sqlite3.Database): IResolvers => ({
 					res(record)
 				});
 			});
+		},
+		getFlockFuzzy: (_,{search}: {search: string}) => {
+			const query = `SELECT firstname, lastname FROM sheep WHERE firstname LIKE ? OR lastname LIKE ? ` +
+				`OR firstname || ' ' || lastname LIKE ?`;
+			const s = `%${search}%`
+			return new Promise(function(res,rej){
+				db.all(query, [s,s,s], (err, rows) => {
+					
+				})
+			})
 		}
 	}
 });
@@ -92,7 +102,6 @@ export const getSchema = async (
 	const rawSchema = await readFile(options.schemaPath);
 	return new ApolloServer({
 		typeDefs: rawSchema.toString(),
-		resolvers: GetSchemaRoot(db),
-		playground: {endpoint:"/graphiql"}
+		resolvers: GetSchemaRoot(db)
 	});
 };

@@ -1,3 +1,8 @@
+type Sheep {
+	firstname: String
+	lastname: String
+}
+
 type User {
 	guid: String
 	username: String
@@ -8,4 +13,5 @@ type User {
 
 type Query {
 	getUser(guid: String): User
+	getFlockFuzzy(search: string): [Sheep]
 }
