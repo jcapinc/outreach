@@ -1,8 +1,8 @@
 type User {
-	guid: String,
-	username: String,
-	email: String,
-	firstname: String,
+	guid: String
+	username: String
+	email: String
+	firstname: String
 	lastname: String
 }
 

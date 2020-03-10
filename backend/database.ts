@@ -30,6 +30,7 @@ export async function connect(userOptions: Partial<IConnectionOptions> = default
 			if(stat.isFile()) await util.promisify(fs.unlink)(dbdir);
 			fs.mkdir(dbdir, res);
 		}
+		else res();
 	}));
 
 	const db = await new Promise<sqlite3.Database>((res,rej) => {
@@ -38,7 +39,6 @@ export async function connect(userOptions: Partial<IConnectionOptions> = default
 			res(db);
 		});
 	});
-
 	const schemas = await util.promisify(fs.readdir)(options.schemapath);
 	const query = "SELECT name FROM sqlite_master WHERE type='table';";
 	const extentTables = await new Promise<string[]>((res,rej) => db.all(query, function(err, rows){
@@ -46,9 +46,10 @@ export async function connect(userOptions: Partial<IConnectionOptions> = default
 		res(rows.map(record => record.name));
 	}));
 
-	for(let i = 0; i < schemas.length; i++){
+	for (let i = 0; i < schemas.length; i++) {
 		if(schemas[i].indexOf(".sql") === -1) continue;
 		const tablename = schemas[i].replace(".sql","");
+		if(tablename[0] === ".") continue;
 		if(extentTables.indexOf(tablename) === -1){
 			options.log(`Creating table ${tablename}`);
 			const schema = (await readFile(path.join(options.schemapath.toString(),schemas[i]))).toString();
@@ -70,8 +71,8 @@ const defaultSchemaOptions: IGetSchemaOptions = {
 };
 
 export const GetSchemaRoot = (db: sqlite3.Database): IResolvers => ({
-	root: {
-		getUser: ({guid}: {guid: string}) => {
+	Query: {
+		getUser: (_, {guid} : {guid: string}) => {
 			const sql = "SELECT guid, username, email, firstname, lastname FROM users WHERE guid=?";
 			return new Promise(function(res, rej){
 				db.get(sql, [guid], function(err, record){
@@ -89,9 +90,9 @@ export const getSchema = async (
 ) => {
 	const options = Object.assign(defaultSchemaOptions, userOptions) as IGetSchemaOptions;
 	const rawSchema = await readFile(options.schemaPath);
-	console.log("pre-apollo");
 	return new ApolloServer({
 		typeDefs: rawSchema.toString(),
-		resolvers: GetSchemaRoot(db)
+		resolvers: GetSchemaRoot(db),
+		playground: {endpoint:"/graphiql"}
 	});
 };
