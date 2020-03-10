@@ -10,10 +10,10 @@ const port = 9001;
 connect().then(db => {
 	login(app, db);
 	return getSchema(db)
-}).then(apollo => apollo.applyMiddleware({app})).then(() => {
-	const ret = app.listen(port);
+}).then(apollo => {
+	apollo.applyMiddleware({app});
+	app.listen(port);
 	console.log("Listening on port " + port.toString());
-	return ret;
 }).catch(err => {
 	return console.log(err);
 });

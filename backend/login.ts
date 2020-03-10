@@ -48,7 +48,7 @@ export default function login(
 			});
 			
 			if(record === undefined) throw "Username or Password is Incorrect";
-			res.send(JSON.stringify({jwt: jwt.sign(record, secret)}));
+			res.send({jwt: jwt.sign(record, secret)});
 			return;
 		} catch(exception) {
 			res.status(401).send(JSON.stringify({error: exception.toString()}));
