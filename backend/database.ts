@@ -2,8 +2,8 @@ import sqlite3 from 'sqlite3';
 import path from 'path';
 import util from 'util';
 import fs from 'fs';
-import { IResolvers } from 'graphql-tools';
 import { ApolloServer } from 'apollo-server-express';
+import GetQueries from './queries';
 
 const readFile = util.promisify(fs.readFile);
 
@@ -70,29 +70,7 @@ const defaultSchemaOptions: IGetSchemaOptions = {
 	schemaPath: path.join(__dirname, "schema.graphql")
 };
 
-export const GetSchemaRoot = (db: sqlite3.Database): IResolvers => ({
-	Query: {
-		getUser: (_, {guid} : {guid: string}) => {
-			const sql = "SELECT guid, username, email, firstname, lastname FROM users WHERE guid=?";
-			return new Promise(function(res, rej){
-				db.get(sql, [guid], function(err, record){
-					if(err) rej(err);
-					res(record)
-				});
-			});
-		},
-		getFlockFuzzy: (_,{search}: {search: string}) => {
-			const query = `SELECT firstname, lastname FROM sheep WHERE firstname LIKE ? OR lastname LIKE ? ` +
-				`OR firstname || ' ' || lastname LIKE ?`;
-			const s = `%${search}%`
-			return new Promise(function(res,rej){
-				db.all(query, [s,s,s], (err, rows) => {
-					
-				})
-			})
-		}
-	}
-});
+
 
 export const getSchema = async (
 	db: sqlite3.Database,
@@ -102,6 +80,6 @@ export const getSchema = async (
 	const rawSchema = await readFile(options.schemaPath);
 	return new ApolloServer({
 		typeDefs: rawSchema.toString(),
-		resolvers: GetSchemaRoot(db)
+		resolvers: {Query: GetQueries(db)}
 	});
 };

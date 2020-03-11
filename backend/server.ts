@@ -2,10 +2,8 @@ import express from "express";
 import { connect, getSchema } from "./database";
 import login from './login';
 
-
 const app = express();
 app.use(express.json());
-
 const port = 9001;
 connect().then(db => {
 	login(app, db);
