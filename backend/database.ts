@@ -4,6 +4,7 @@ import util from 'util';
 import fs from 'fs';
 import { ApolloServer } from 'apollo-server-express';
 import GetQueries from './queries';
+import GetMutations from './mutations';
 
 const readFile = util.promisify(fs.readFile);
 
@@ -70,8 +71,6 @@ const defaultSchemaOptions: IGetSchemaOptions = {
 	schemaPath: path.join(__dirname, "schema.graphql")
 };
 
-
-
 export const getSchema = async (
 	db: sqlite3.Database,
 	userOptions: Partial<IGetSchemaOptions> = {}
@@ -80,6 +79,9 @@ export const getSchema = async (
 	const rawSchema = await readFile(options.schemaPath);
 	return new ApolloServer({
 		typeDefs: rawSchema.toString(),
-		resolvers: {Query: GetQueries(db)}
+		resolvers: {
+			Query: GetQueries(db),
+			Mutation: GetMutations(db)
+		}
 	});
 };

@@ -1,6 +1,5 @@
 import { Database } from './database';
 import { IResolverObject } from 'graphql-tools';
-import { } from 'fast-levenshtein';
 
 export default function GetQueries(db: Database): IResolverObject {
   return {

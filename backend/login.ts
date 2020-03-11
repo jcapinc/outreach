@@ -5,7 +5,6 @@ import jwt from "jsonwebtoken";
 import {Options as UnlessOptions} from 'express-unless';
 import md5 from 'md5';
 
-
 const secret = "temporary-make-me-configurable";
 
 export interface LoginOptions{

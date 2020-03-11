@@ -1,13 +1,32 @@
+import * as models from '../../ModelTypes';
 
-export interface LoginState {
+export interface ILoginState {
 	jwt: string | undefined;
 	message: string | undefined;
 	isLoading: boolean;
 	error: string | undefined;
 }
 
+export interface IAddPrayerState {
+	form: Partial<IAddPrayerFormValues>;
+	sheepSearch: IAddPrayerSheepSearch;
+}
+
+export interface IAddPrayerFormValues extends models.IPrayerRequest {
+	relatedSheep?: models.IPrayerSheep[];
+	history: models.IEventRecord[];
+	tags: models.IPrayerTag[];
+}
+
+export interface IAddPrayerSheepSearch{
+	found: models.ISheepRelations[];
+	search: string;
+	shepherdWorking: boolean;
+}
+
 export interface AppState{
-	login: LoginState;
+	login: ILoginState;
+	addprayer: IAddPrayerState;
 }
 
 export interface Action {
@@ -22,6 +41,14 @@ const defaultState: AppState = {
 		message: undefined,
 		error: undefined,
 		isLoading: false
+	}, 
+	addprayer: {
+		form: {},
+		sheepSearch: {
+			found:[],
+			search: "",
+			shepherdWorking: false
+		}
 	}
 };
 
@@ -30,6 +57,7 @@ export default function reducer(state: AppState = defaultState, action: Action):
 	console.log(action);
 	switch(action.type){
 		default: return state;
+		//#region Login
 		case "LOGIN_ATTEMPT_STARTED":
 			return Object.assign({}, state, { login: {
 				login: {
@@ -37,7 +65,7 @@ export default function reducer(state: AppState = defaultState, action: Action):
 					message: "Logging In...", 
 					error: undefined,
 					isLoading: true
-				} as LoginState
+				} as ILoginState
 			}});
 		case "LOGIN_ATTEMPT_SUCCESS": 
 			if(action.response === undefined) return state;
@@ -49,7 +77,7 @@ export default function reducer(state: AppState = defaultState, action: Action):
 					error: undefined,
 					isLoading: false,
 					message: undefined
-				} as LoginState
+				} as ILoginState
 			}});
 		case "LOGIN_ATTEMPT_FAIL":
 		case "LOGIN_ATTEMPT_FAILED":
@@ -68,5 +96,9 @@ export default function reducer(state: AppState = defaultState, action: Action):
 				isLoading: false,
 				error: undefined
 			}});
+		//#endregion
+		//#region Add Form
+
+		//#endregion
 	}
 }

@@ -3,6 +3,12 @@ type Sheep {
 	lastname: String
 }
 
+type PrayerRequest {
+	guid: String!
+	topic: String
+	body: String
+}
+
 type User {
 	guid: String
 	username: String
@@ -14,4 +20,8 @@ type User {
 type Query {
 	getUser(guid: String): User
 	getFlockFuzzy(search: String): [Sheep]
+}
+
+type Mutation{
+	createPrayerRequest: PrayerRequest
 }

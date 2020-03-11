@@ -5,6 +5,7 @@ import { Home } from './Home';
 import { useSelector } from 'react-redux';
 import { AppState } from '../store';
 import { Login } from './Login';
+import AddPrayer from './prayer/Add';
 
 
 export function App(){
@@ -14,7 +15,7 @@ export function App(){
 			<Navigation />
 			<Switch>
 				<Route exact path="/" component={Home} />
-				<Route path="/flock" component={flock} />
+				<Route path="/add-prayer" component={AddPrayer} />
 			</Switch>
 		</React.Fragment> : 
 		<Login /> }
