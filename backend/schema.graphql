@@ -1,4 +1,5 @@
 type Sheep {
+	guid: String
 	firstname: String
 	lastname: String
 }

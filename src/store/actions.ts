@@ -1,5 +1,7 @@
 import React from 'react';
 import { Action } from './';
+import { ThunkAction} from 'redux-thunk';
+import { AppState } from '../store';
 
 export interface LoginResponse{
 	jwt?: string;
@@ -36,6 +38,13 @@ export function attemptlogin(
 		catch(e){
 			dispatch({type: "LOGIN_ATTEMPT_FAILED", message: e.toString()})
 		}
+	}
+}
+
+export function PrayerSheepSearch(search: string): ThunkAction<{},AppState,{},Action> {
+	return async function(dispatch){
+		dispatch({type: "PRAYER_SEARCH_INIT"});
+		const result = await fetch("/api/graphql",{body:"{"})
 	}
 }
 
