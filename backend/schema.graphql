@@ -23,6 +23,6 @@ type Query {
 	getFlockFuzzy(search: String): [Sheep]
 }
 
-type Mutation{
+type Mutation {
 	createPrayerRequest: PrayerRequest
 }

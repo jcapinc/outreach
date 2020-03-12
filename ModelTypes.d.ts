@@ -26,7 +26,7 @@ export interface ISheep extends DBRecord {
 }
 
 export interface ISheepRelations extends ISheep, IHistoricRecord {
-	prayerRequests: IPrayerRequestRelations[];
+	prayerRequests?: IPrayerRequestRelations[];
 }
 
 export interface IPrayerSheep extends DBRecord {

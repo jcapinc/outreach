@@ -21,7 +21,3 @@ export function App(){
 		<Login /> }
 	</Router>;
 }
-
-function flock(){
-	return <h2>Flock</h2>;
-}

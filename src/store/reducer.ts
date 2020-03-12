@@ -22,6 +22,13 @@ export interface IAddPrayerSheepSearch{
 	found: models.ISheepRelations[];
 	search: string;
 	shepherdWorking: boolean;
+	error: string | undefined;
+}
+
+export interface IGetFlockFuzzyResponse{
+	data: {
+		getFlockFuzzy: models.ISheep[];
+	}
 }
 
 export interface AppState{
@@ -33,6 +40,7 @@ export interface Action {
 	type: string;
 	response?: Response;
 	message?: string;
+	payload?: unknown;
 }
 
 const defaultState: AppState = {
@@ -47,11 +55,17 @@ const defaultState: AppState = {
 		sheepSearch: {
 			found:[],
 			search: "",
-			shepherdWorking: false
+			shepherdWorking: false,
+			error: undefined
 		}
 	}
 };
 
+function setSheepSearch(newSearch: Partial<IAddPrayerSheepSearch>, state: AppState): AppState {
+	const sheepSearch = Object.assign({}, state.addprayer.sheepSearch, newSearch);
+	const addprayer = Object.assign({}, state.addprayer, {sheepSearch});
+	return Object.assign({}, state, {addprayer});
+}
 
 export default function reducer(state: AppState = defaultState, action: Action): AppState{
 	console.log(action);
@@ -98,7 +112,15 @@ export default function reducer(state: AppState = defaultState, action: Action):
 			}});
 		//#endregion
 		//#region Add Form
-
+		case "ADD_PRAYER_SEARCH_INIT":
+			return setSheepSearch({shepherdWorking: true, search: action.message, error: undefined}, state);
+		case "ADD_PRAYER_SEARCH_COMPLETED":
+			const results = action.payload as IGetFlockFuzzyResponse;
+			return setSheepSearch({found: results.data.getFlockFuzzy, shepherdWorking: false}, state);
+		case "ADD_PRAYER_SEARCH_ERROR":
+			return setSheepSearch({found:[], shepherdWorking: false, error: action.message}, state);
+		case "ADD_PRAYER_SEARCH_CLEAR":
+			return setSheepSearch({found:[],shepherdWorking: false, error: undefined,search:""}, state)
 		//#endregion
 	}
 }

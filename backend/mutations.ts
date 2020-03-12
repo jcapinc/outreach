@@ -1,15 +1,16 @@
 import { IPrayerRequest } from '../ModelTypes';
 import { Database } from "./database";
 import uniqid from 'uniqid';
+import { IResolverObject } from 'graphql-tools';
 
-export default function GetMutations(db: Database){
+export default function GetMutations(db: Database): IResolverObject{
 	return {
 		createPrayerRequest: async function(){
 			const results: IPrayerRequest | undefined = await new Promise(function(resolve){
 				const query = "SELECT * FROM prayer_requests WHERE topic=''";
 				db.get(query, function(err, row){
 					if(err) resolve(undefined);
-					return row;
+					resolve(row);
 				});
 			});
 			if(results !== undefined) return results;
