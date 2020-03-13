@@ -1,11 +1,11 @@
 import React from 'react';
 import { Navigation } from './Navigation';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Switch, Route, useParams } from 'react-router-dom';
 import { Home } from './Home';
 import { useSelector } from 'react-redux';
 import { AppState } from '../store';
 import { Login } from './Login';
-import AddPrayer from './prayer/Add';
+import PrayerForm from './PrayerRequestForm';
 
 
 export function App(){
@@ -15,9 +15,14 @@ export function App(){
 			<Navigation />
 			<Switch>
 				<Route exact path="/" component={Home} />
-				<Route path="/add-prayer" component={AddPrayer} />
+				<Route path="/prayer/:id" component={PrayerForm} />
 			</Switch>
 		</React.Fragment> : 
 		<Login /> }
 	</Router>;
+}
+
+function ParameterPrayerForm(){
+	let {id} = useParams();
+	return <PrayerForm id={id || ""} />
 }
