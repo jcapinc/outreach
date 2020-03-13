@@ -10,6 +10,12 @@ type PrayerRequest {
 	body: String
 }
 
+input PrayerRequestInput {
+	guid: String!
+	topic: String
+	body: String
+}
+
 type User {
 	guid: String
 	username: String
@@ -25,4 +31,5 @@ type Query {
 
 type Mutation {
 	createPrayerRequest: PrayerRequest
+	updatePrayerRequest(fields: PrayerRequestInput): PrayerRequest
 }

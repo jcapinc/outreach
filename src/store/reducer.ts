@@ -13,9 +13,8 @@ export interface IAddPrayerState {
 }
 
 export interface IAddPrayerFormValues extends models.IPrayerRequest {
-	relatedSheep?: models.IPrayerSheep[];
-	history: models.IEventRecord[];
-	tags: models.IPrayerTag[];
+	topic: string;
+	body: string;
 }
 
 export interface IAddPrayerSheepSearch{
@@ -121,6 +120,10 @@ export default function reducer(state: AppState = defaultState, action: Action):
 			return setSheepSearch({found:[], shepherdWorking: false, error: action.message}, state);
 		case "ADD_PRAYER_SEARCH_CLEAR":
 			return setSheepSearch({found:[],shepherdWorking: false, error: undefined,search:""}, state)
+		case "ADD_PRAYER_FORM_UPDATE":
+			return {...state, addprayer: {...state.addprayer, form: { ...state.addprayer.form, 
+				...(action.payload as Partial<IAddPrayerFormValues>)
+			}}};
 		//#endregion
 	}
 }

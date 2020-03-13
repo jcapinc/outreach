@@ -3,11 +3,14 @@ import { Action } from './';
 import { ThunkAction} from 'redux-thunk';
 import { AppState } from '../store';
 import { ApolloError } from 'apollo-server-express';
+import { IAddPrayerFormValues } from './reducer';
 
 export interface LoginResponse{
 	jwt?: string;
 	error?: string
 }
+
+type MyThunk = ThunkAction<void, AppState, {}, Action>;
 
 export function attemptlogin(
 	username: string, 
@@ -34,7 +37,7 @@ export function attemptlogin(
 			}); else dispatch({
 				type: "LOGIN_ATTEMPT_FAIL",
 				message: response.error?.toString() || ""
-			})
+			});
 		}
 		catch(e){
 			dispatch({type: "LOGIN_ATTEMPT_FAILED", message: e.toString()})
@@ -42,7 +45,11 @@ export function attemptlogin(
 	}
 }
 
-export function PrayerSheepSearch(search: string): ThunkAction<void,AppState,{},Action> {
+export function logout(): Action {
+	return { type: "LOGOUT"};
+}
+
+export function PrayerSheepSearch(search: string): MyThunk {
 	return async function(dispatch, getState){
 		dispatch({type: "ADD_PRAYER_SEARCH_INIT", message: search});
 		if(search === ""){
@@ -90,6 +97,43 @@ export function PrayerSheepSearch(search: string): ThunkAction<void,AppState,{},
 	}
 }
 
-export function logout(): Action {
-	return { type: "LOGOUT"};
+export function UpdatePrayerRequestForm(values: Partial<IAddPrayerFormValues>): Action{
+	return {type:"ADD_PRAYER_FORM_UPDATE", payload: values};
+}
+
+interface ApolloResponse<T>{
+	error?:ApolloError;
+	data: T;
+}
+
+interface UpdatePrayerRequestResponse {
+	updatePrayerRequest:Partial<IAddPrayerFormValues> | null
+}
+
+export function UpdatePrayerRequestServer(values: Partial<IAddPrayerFormValues>): MyThunk {
+	return async function(dispatch, getState){
+		const combinedResults = {...getState().addprayer.form,...values} as IAddPrayerFormValues;
+		const jwt = getState().login.jwt;
+		const keys = Object.keys(combinedResults) as (keyof IAddPrayerFormValues)[];
+		const fields = keys.map(key => `${key}:"${combinedResults[key]}"`).join(",");
+		const graphql = `mutation {updatePrayerRequest(fields:{${fields}}){guid}}`;
+		const result = await fetch("/graphql", {
+			body: JSON.stringify({query: graphql}), 
+			method: "POST", 
+			headers: [
+				['content-type', 'application/json'],
+				["Authorization", `Bearer ${jwt}`]
+			]
+		});
+		if(!result.ok) {
+			console.log(result);
+			return;
+		}
+		const body = await result.json() as ApolloResponse<UpdatePrayerRequestResponse>;
+		if(body.error !== undefined) return console.log(body.error.message);
+		if(body.data?.updatePrayerRequest !== null) {
+			console.log("Success!",body.data.updatePrayerRequest);
+			return dispatch(UpdatePrayerRequestForm(body.data.updatePrayerRequest));
+		}
+	}
 }
