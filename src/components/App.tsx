@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux';
 import { AppState } from '../store';
 import { Login } from './Login';
 import PrayerForm from './PrayerRequestForm';
+import { Callout } from '@blueprintjs/core';
 
 
 export function App(){
@@ -15,7 +16,7 @@ export function App(){
 			<Navigation />
 			<Switch>
 				<Route exact path="/" component={Home} />
-				<Route path="/prayer/:id" component={PrayerForm} />
+				<Route path="/prayer/:id" component={ParameterPrayerForm} />
 			</Switch>
 		</React.Fragment> : 
 		<Login /> }
@@ -23,6 +24,9 @@ export function App(){
 }
 
 function ParameterPrayerForm(){
-	let {id} = useParams();
-	return <PrayerForm id={id || ""} />
+	const state = useSelector((state:AppState) => state.requests);
+	const {id} = useParams();
+	const record = state?.find(record => record.guid === id);
+	if(record !== undefined) return <PrayerForm record={record} />;
+	return <Callout title="Could not find prayer record">There was a problem when loading the prayer record</Callout>;
 }

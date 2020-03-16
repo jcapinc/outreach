@@ -3,7 +3,7 @@ import { Action } from './';
 import { ThunkAction} from 'redux-thunk';
 import { AppState } from '../store';
 import { ApolloError } from 'apollo-server-express';
-import { IAddPrayerFormValues } from './reducer';
+import { IPrayerRequest,  } from '../../ModelTypes';
 
 export interface LoginResponse{
 	jwt?: string;
@@ -50,90 +50,49 @@ export function logout(): Action {
 }
 
 export function PrayerSheepSearch(search: string): MyThunk {
-	return async function(dispatch, getState){
-		dispatch({type: "ADD_PRAYER_SEARCH_INIT", message: search});
-		if(search === ""){
-			dispatch({type: "ADD_PRAYER_SEARCH_CLEAR"});
-			return;
-		}
-
-		const jwt: string = (getState() as AppState).login.jwt || "";
-		if(jwt === "") {
-			dispatch({type:"ADD_PRAYER_SEARCH_ERROR",message: "Cannot search for sheep when you are not logged in"});
-			return
-		}
-		
-		const graphql = `query {getFlockFuzzy(search:"${search}"){guid,firstname,lastname}}`;
-		const reqinit = {
-			body: JSON.stringify({'query':graphql}), 
-			method: "POST", 
-			headers:[
-				['content-type','application/json'],
-				['Authorization', `Bearer ${jwt}`]
-			]
-		};
-		const result = await fetch("/graphql",reqinit);
-		if(!result.ok){
-			console.log(result.statusText);
-		}
-		const decoded = await result.json();
-
-		if(decoded.error !== undefined) {
-			const error: ApolloError = decoded.error;
-			dispatch({
-				type:"ADD_PRAYER_SEARCH_ERROR",
-				response: result,
-				message: error.message,
-				payload: decoded
-			});
-			return;
-		}
-		
-		dispatch({
-			type: "ADD_PRAYER_SEARCH_COMPLETED",
-			response: result,
-			payload: decoded
-		});
-	}
+	
 }
 
-export function UpdatePrayerRequestForm(values: Partial<IAddPrayerFormValues>): Action{
+export function UpdatePrayerRequestForm(values: Partial<IPrayerFormValues>): Action{
 	return {type:"ADD_PRAYER_FORM_UPDATE", payload: values};
 }
 
-interface ApolloResponse<T>{
-	error?:ApolloError;
-	data: T;
+export function UpdatePrayerRequestList(prs:IPrayerRequest[]): Action {
+	return {type:"FETCH_PRAYER_REQUESTS_SUCCESS", payload: prs};
 }
 
-interface UpdatePrayerRequestResponse {
-	updatePrayerRequest:Partial<IAddPrayerFormValues> | null
-}
-
-export function UpdatePrayerRequestServer(values: Partial<IAddPrayerFormValues>): MyThunk {
+export function FetchPrayerRequests(): MyThunk{
 	return async function(dispatch, getState){
-		const combinedResults = {...getState().addprayer.form,...values} as IAddPrayerFormValues;
-		const jwt = getState().login.jwt;
-		const keys = Object.keys(combinedResults) as (keyof IAddPrayerFormValues)[];
-		const fields = keys.map(key => `${key}:"${combinedResults[key]}"`).join(",");
-		const graphql = `mutation {updatePrayerRequest(fields:{${fields}}){guid}}`;
-		const result = await fetch("/graphql", {
-			body: JSON.stringify({query: graphql}), 
-			method: "POST", 
-			headers: [
-				['content-type', 'application/json'],
-				["Authorization", `Bearer ${jwt}`]
-			]
-		});
-		if(!result.ok) {
-			console.log(result);
-			return;
+		try{
+			const jwt = getState().login.jwt;
+			const graphql = `query{getPrayerRequests{guid,topic,body}}`;
+			dispatch({type:"FETCH_PRAYER_REQUESTS_INIT"});
+			const fetchResult = await fetch("/graphql", graphqlFetchOptions(jwt || "",graphql));
+			if(!fetchResult.ok) return dispatch({
+				type:"FETCH_PRAYER_REQUESTS_FAILURE", 
+				response: fetchResult,
+				message: fetchResult.statusText
+			});
+			const jsonResult = await fetchResult.json() as ApolloResponse<{getPrayerRequests:IPrayerRequest[]}>;
+			return dispatch(UpdatePrayerRequestList(jsonResult.data.getPrayerRequests));
 		}
-		const body = await result.json() as ApolloResponse<UpdatePrayerRequestResponse>;
-		if(body.error !== undefined) return console.log(body.error.message);
-		if(body.data?.updatePrayerRequest !== null) {
-			console.log("Success!",body.data.updatePrayerRequest);
-			return dispatch(UpdatePrayerRequestForm(body.data.updatePrayerRequest));
+		catch(err){
+			dispatch({type:"FETCH_PRAYER_REQUESTS_FAILURE",message: err.toString(), payload: err});
 		}
 	}
+}
+
+export function setFormPrayerRequest(request: IPrayerRequest): Action{
+	return {type: "SET_FORM_PRAYER_REQUEST", payload: request};
+}
+
+export function loadFormPrayerRequest(id: string): MyThunk {
+	return async function(dispatch, getState){
+		const records = getState().prayerRequests.requests;
+		if(records !== undefined) for(let i = 0; i < records.length; i++) if(records[i].guid === id){
+			console.log("Found Record!");
+			return dispatch(setFormPrayerRequest(records[i]));
+		}
+		console.log("Record not found", id);
+	};
 }

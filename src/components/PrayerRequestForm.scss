@@ -20,3 +20,10 @@
 		}
 	}
 }
+
+.oneline{
+	text-overflow:ellipsis;
+	white-space:nowrap;
+	overflow: hidden;
+	padding-bottom:5px;
+}

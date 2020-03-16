@@ -27,6 +27,7 @@ type User {
 type Query {
 	getUser(guid: String): User
 	getFlockFuzzy(search: String): [Sheep]
+	getPrayerRequests: [PrayerRequest]
 }
 
 type Mutation {

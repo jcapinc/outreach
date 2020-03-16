@@ -5,25 +5,27 @@ import RichTextEditor, { EditorValue } from 'react-rte';
 import { 
 	AppState, 
 	PrayerSheepSearch, 
-	IAddPrayerFormValues, 
+	IPrayerFormValues, 
 	UpdatePrayerRequestForm, 
-	UpdatePrayerRequestServer 
+	UpdatePrayerRequestServer, 
+	setFormPrayerRequest,
+	loadFormPrayerRequest
 } from '../store';
 import './PrayerRequestForm.scss';
+import { IPrayerRequest } from '../../ModelTypes';
 
 let timeout = setTimeout(() => null, 0);
 
 export interface IPrayerFormProps{
-	id: string;
+	record: IPrayerRequest;
 }
 
-export default function PrayerForm(props: IPrayerFormProps){
-	const state = useSelector((app: AppState) => app.addprayer.form);
-	const [formState, setFormState] = React.useState<IAddPrayerFormValues>({topic: "",body: "",guid: props.id ,...state});
+export default function PrayerForm({record}: IPrayerFormProps){
+	const [formState, setFormState] = React.useState<IPrayerFormValues>(record);
 	const [wysiwygState, setWysiwygState] = React.useState(RichTextEditor.createValueFromString(formState.body,"html"));
 	const dispatch = useDispatch();
 
-	const update = (field: keyof IAddPrayerFormValues, input: string) => {
+	const update = (field: keyof IPrayerFormValues, input: string) => {
 		setFormState({...formState,[field]: input});
 		dispatch(UpdatePrayerRequestForm({[field]: input}));
 		clearTimeout(timeout);
@@ -32,14 +34,14 @@ export default function PrayerForm(props: IPrayerFormProps){
 		}, 2000);
 	};
 
-	const genOnChange = (field: keyof IAddPrayerFormValues) => (e:React.ChangeEvent<HTMLInputElement>) => update(field, e.target.value);
-	const genOnChangeRTE = (field: keyof IAddPrayerFormValues) => (e:EditorValue) => {
+	const genOnChange = (field: keyof IPrayerFormValues) => (e:React.ChangeEvent<HTMLInputElement>) => update(field, e.target.value);
+	const genOnChangeRTE = (field: keyof IPrayerFormValues) => (e:EditorValue) => {
 		update(field, e.toString('html'));
 		setWysiwygState(e);
 	};
 
 	return <Card className="PrayerCardContainer">
-		<h1 className="bp3-heading">Add Prayer</h1>
+		<h1 className="bp3-heading oneline">Prayer Request{formState.topic !== undefined && formState.topic.length > 0 ? ": " + formState.topic : ""}</h1>
 		<div className="AddPrayerFormContainer">
 			<div className="cell">
 				<AddPrayerFlockSearch />
@@ -70,7 +72,7 @@ export function AddPrayerFlockSearch(){
 			dispatch(PrayerSheepSearch(e.target.value));
 		},500);
 	};
-	const [sheepSearch] = useSelector((app: AppState) => [app.addprayer.sheepSearch]);
+	const [sheepSearch] = useSelector((app: AppState) => [app.prayerform.sheepSearch]);
 	const shouldAdd = sheepSearch.found.length === 0 && sheepSearch.search.length > 0 && sheepSearch.shepherdWorking === false;
 	return <React.Fragment>
 			<FormGroup label="Prayer Targets" labelFor="sheep" labelInfo="(required)">

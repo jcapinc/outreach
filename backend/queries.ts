@@ -22,6 +22,15 @@ export default function GetQueries(db: Database): IResolverObject {
 					res(rows);
 				});
 			})
+		},
+		getPrayerRequests: () => {
+			const query = `SELECT * FROM prayer_requests WHERE topic !=''`;
+			return new Promise(function(res,rej){
+				db.all(query,(err, rows) => {
+					if(err) rej(err);
+					res(rows);
+				});
+			});
 		}
 	};
 }
