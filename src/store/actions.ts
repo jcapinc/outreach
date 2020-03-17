@@ -49,37 +49,16 @@ export function logout(): Action {
 	return { type: "LOGOUT"};
 }
 
-export function PrayerSheepSearch(search: string): MyThunk {
+export function PrayerSheepSearch(search: string) {
 	
-}
-
-export function UpdatePrayerRequestForm(values: Partial<IPrayerFormValues>): Action{
-	return {type:"ADD_PRAYER_FORM_UPDATE", payload: values};
 }
 
 export function UpdatePrayerRequestList(prs:IPrayerRequest[]): Action {
 	return {type:"FETCH_PRAYER_REQUESTS_SUCCESS", payload: prs};
 }
 
-export function FetchPrayerRequests(): MyThunk{
-	return async function(dispatch, getState){
-		try{
-			const jwt = getState().login.jwt;
-			const graphql = `query{getPrayerRequests{guid,topic,body}}`;
-			dispatch({type:"FETCH_PRAYER_REQUESTS_INIT"});
-			const fetchResult = await fetch("/graphql", graphqlFetchOptions(jwt || "",graphql));
-			if(!fetchResult.ok) return dispatch({
-				type:"FETCH_PRAYER_REQUESTS_FAILURE", 
-				response: fetchResult,
-				message: fetchResult.statusText
-			});
-			const jsonResult = await fetchResult.json() as ApolloResponse<{getPrayerRequests:IPrayerRequest[]}>;
-			return dispatch(UpdatePrayerRequestList(jsonResult.data.getPrayerRequests));
-		}
-		catch(err){
-			dispatch({type:"FETCH_PRAYER_REQUESTS_FAILURE",message: err.toString(), payload: err});
-		}
-	}
+export function FetchPrayerRequests(){
+	
 }
 
 export function setFormPrayerRequest(request: IPrayerRequest): Action{
@@ -88,7 +67,7 @@ export function setFormPrayerRequest(request: IPrayerRequest): Action{
 
 export function loadFormPrayerRequest(id: string): MyThunk {
 	return async function(dispatch, getState){
-		const records = getState().prayerRequests.requests;
+		const records = getState().requests;
 		if(records !== undefined) for(let i = 0; i < records.length; i++) if(records[i].guid === id){
 			console.log("Found Record!");
 			return dispatch(setFormPrayerRequest(records[i]));

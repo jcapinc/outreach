@@ -8,6 +8,7 @@ app.use(express.json());
 const port = 9001;
 connect().then(db => {
 	login(app, db);
+	state(app);
 	app.listen(port);
 	console.log("Listening on port " + port.toString());
 }).catch(err => {
