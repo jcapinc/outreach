@@ -1,4 +1,4 @@
-import { UserAppState } from '../ModelTypes';
+import { IUserAppState } from '../ModelTypes';
 import { UserRecord } from './login';
 import { resolve } from 'path';
 import { Database } from 'sqlite3';
@@ -34,7 +34,7 @@ const defaultStateOptions = {
 
 export type IJWTPayload = Pick<UserRecord,"username" | "guid"> & {iat: number};
 
-const defaultState: UserAppState = {
+const defaultState: IUserAppState = {
 	requests: []
 };
 
@@ -60,8 +60,8 @@ export default function state(app: Express, userOptions: Partial<StateOptions> =
 	app.post("/state", async function(request,response){
 		const userPath = getUserPath(request);
 		if(!(await exists(userPath))) await writeFile(userPath, JSON.stringify(defaultState));
-		const results = JSON.parse((await readFile(userPath)).toString()) as UserAppState;
-		const changes = request.body as Diff<UserAppState>[];
+		const results = JSON.parse((await readFile(userPath)).toString()) as IUserAppState;
+		const changes = request.body as Diff<IUserAppState>[];
 		changes.map(diff => applyChange(results, undefined, diff));
 		await writeFile(userPath, JSON.stringify(results));
 		response.send({message:"success"});
@@ -70,8 +70,8 @@ export default function state(app: Express, userOptions: Partial<StateOptions> =
 	app.get("/state/diff", async function(request,response){
 		const userPath = getUserPath(request);
 		if(!(await exists(userPath))) await writeFile(userPath, JSON.stringify(defaultState));
-		const results = JSON.parse((await readFile(userPath)).toString()) as UserAppState;
-		const compare = request.body as UserAppState[];
+		const results = JSON.parse((await readFile(userPath)).toString()) as IUserAppState;
+		const compare = request.body as IUserAppState[];
 		response.send(diff(results,compare));
 	});
 }

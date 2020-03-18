@@ -1,7 +1,10 @@
 import * as models from '../../ModelTypes';
 
-export interface AppState extends models.UserAppState{
-	login: ILoginState;
+export interface AppState {
+	login: ILoginState
+	stateError?: string;
+	currentState: models.IUserAppState;
+	initialState: models.IUserAppState;
 }
 
 export interface ILoginState {
@@ -18,6 +21,10 @@ export interface Action {
 	payload?: unknown;
 }
 
+const defaultUserAppState:models.IUserAppState = {
+	requests: []
+}
+
 const defaultState: AppState = {
 	login: {
 		jwt: localStorage.getItem("jwt") || undefined,
@@ -25,7 +32,8 @@ const defaultState: AppState = {
 		error: undefined,
 		isLoading: false
 	},
-	requests: []
+	currentState: defaultUserAppState,
+	initialState: defaultUserAppState
 };
 
 
@@ -74,7 +82,16 @@ export default function reducer(state: AppState = defaultState, action: Action):
 			}});
 		//#endregion
 		//#region Add Form
-
+		case "SEND_STATE_INIT": 
+			delete state.stateError;
+			return {...state};
+		case "SEND_STATE_FAILURE":
+			return {...state, stateError: action.message};
+		case "SEND_STATE_SUCCESS":
+			return {...state, 
+				initialState: {...action.payload as models.IUserAppState}, 
+				currentState: {...action.payload as models.IUserAppState}
+			};
 		//#endregion
 	}
 }

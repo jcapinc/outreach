@@ -1,9 +1,8 @@
-import React from 'react';
 import { Action } from './';
 import { ThunkAction} from 'redux-thunk';
 import { AppState } from '../store';
-import { ApolloError } from 'apollo-server-express';
-import { IPrayerRequest,  } from '../../ModelTypes';
+import { IPrayerRequest } from '../../ModelTypes';
+import { diff } from 'deep-diff';
 
 export interface LoginResponse{
 	jwt?: string;
@@ -12,12 +11,9 @@ export interface LoginResponse{
 
 type MyThunk = ThunkAction<void, AppState, {}, Action>;
 
-export function attemptlogin(
-	username: string, 
-	password: string
-) : (dispatch:React.Dispatch<Action>) => Promise<void> {
-	return async function(dispatch: React.Dispatch<Action>){
-		dispatch({type: "LOGIN_ATTEMPT_STARTED"})
+export function attemptlogin(username: string, password: string) : MyThunk {
+	return async function(dispatch){
+		dispatch({type: "LOGIN_ATTEMPT_STARTED"});
 		try {
 			const result = await fetch("/api/login", {
 				method: "POST",
@@ -49,29 +45,38 @@ export function logout(): Action {
 	return { type: "LOGOUT"};
 }
 
-export function PrayerSheepSearch(search: string) {
-	
+export function FetchState(): MyThunk{
+	return async function(dispatch, getState){
+		const response = await fetch("/state",{
+			headers:[["Authorization", "Bearer " + getState().login.jwt]]
+		});
+		if(!response.ok) return dispatch({type:"FETCH_STATE_ERROR", response});
+		return dispatch({type:"FETCH_STATE_SUCCESS", payload: await response.json()});
+	}
+}
+
+export function SendState(): MyThunk {
+	return async function(dispatch, getState){
+		dispatch({type:"SEND_STATE_INIT"});
+		const state = getState();
+		const diffs = diff(state.initialState, state.currentState);
+		const response = await fetch("/state",{
+			method:"POST",
+			body:JSON.stringify(diffs),
+			headers: [
+				["Content-Type","application/json"],
+				["Authorization","Bearer " + state.login.jwt]
+			]
+		});
+		if(!response.ok) return dispatch({type:"SEND_STATE_FAILURE"})
+		return dispatch(FetchState());
+	}
 }
 
 export function UpdatePrayerRequestList(prs:IPrayerRequest[]): Action {
 	return {type:"FETCH_PRAYER_REQUESTS_SUCCESS", payload: prs};
 }
 
-export function FetchPrayerRequests(){
-	
-}
-
-export function setFormPrayerRequest(request: IPrayerRequest): Action{
+export function setFormPrayerRequest(request: IPrayerRequest): Action {
 	return {type: "SET_FORM_PRAYER_REQUEST", payload: request};
-}
-
-export function loadFormPrayerRequest(id: string): MyThunk {
-	return async function(dispatch, getState){
-		const records = getState().requests;
-		if(records !== undefined) for(let i = 0; i < records.length; i++) if(records[i].guid === id){
-			console.log("Found Record!");
-			return dispatch(setFormPrayerRequest(records[i]));
-		}
-		console.log("Record not found", id);
-	};
 }

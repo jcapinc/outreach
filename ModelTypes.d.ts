@@ -2,7 +2,7 @@ export interface DBRecord{
 	guid: string;
 }
 
-export interface UserAppState{
+export interface IUserAppState{
 	requests: IPrayerRequest[];
 }
 
