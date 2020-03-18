@@ -97,6 +97,10 @@ export default function reducer(state: AppState = defaultState, action: Action):
 			return  {...state,currentState: {...state.currentState,
 				requests: action.payload as models.IPrayerRequest[]
 			} as models.IUserAppState};
+		case "ADD_PRAYER_REQUEST":
+			const newRequests = state.currentState.requests;
+			newRequests.push(action.payload as models.IPrayerRequest);
+			return {...state, currentState:{...state.currentState, requests: newRequests}};
 		//#endregion
 	}
 }

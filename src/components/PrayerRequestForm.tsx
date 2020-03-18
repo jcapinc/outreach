@@ -7,6 +7,7 @@ import { IPrayerRequest, ISheep } from '../../ModelTypes';
 import uniqid from 'uniqid';
 
 import './PrayerRequestForm.scss';
+import { format } from 'path';
 
 export interface IPrayerFormProps{
 	record: IPrayerRequest;
@@ -29,9 +30,17 @@ export default function PrayerForm({record, onSave}: IPrayerFormProps){
 	};
 
 	const addSheep = (sheep:ISheep) => {
+		if(formState.sheep.find(record => sheep.guid === record.guid) !== undefined) return;
 		formState.sheep.push(sheep);
 		setFormState({...formState});
 	}
+
+	const removeSheep = (index: number) => () => {
+		console.log(formState);
+		formState.sheep.splice(index,1);
+		console.log(formState);
+		setFormState({...formState});
+	};
 
 	return <Card className="PrayerCardContainer">
 		<h1 className="bp3-heading oneline">
@@ -43,8 +52,11 @@ export default function PrayerForm({record, onSave}: IPrayerFormProps){
 				{formState.sheep.length > 0 ? <React.Fragment>
 					<p>Related Sheep:</p>
 					<ul>
-						{formState.sheep.map(sheep => 
-							<li key={sheep.guid}>{sheep.firstname} {sheep.lastname}</li>)}
+						{formState.sheep.map((sheep, index) => 
+							<li key={sheep.guid}>
+								{sheep.firstname} {sheep.lastname} &emsp;
+								<Button onClick={removeSheep(index)}>Remove</Button>
+							</li>)}
 					</ul>
 				</React.Fragment>: ""}
 			</div>
@@ -73,24 +85,20 @@ export function PrayerFlockSearch({addSheep}:PrayerFlockSearchProps){
 		req.sheep.map(sheep => current.push(sheep));
 		return current;
 	}, [] as ISheep[]));
-	let found: ISheep[] = [];
+	const [found, setFound] = React.useState<ISheep[]>([])
 	const [search, setSearch] = React.useState("");
 
 	const onSearchChange = function(e: React.ChangeEvent<HTMLInputElement>){
 		setSearch(e.target.value);
-		if(timeout !== undefined){
-			clearTimeout(timeout)
-		}
-		e.persist();
-		timeout = setTimeout(function(){
-			const regex = new RegExp("/.*" + search.toLowerCase() + ".*/");
-			found = Object.values(sheep.reduce(function(records, sheep){
-				[sheep.firstname, sheep.lastname, `${sheep.firstname} ${sheep.lastname}`].map(name => {
-					if(regex.test(name)) records[sheep.guid] = sheep;
-				});
-				return records;
-			},{} as Record<string, ISheep>))
-		},500);
+		if(e.target.value === "") return setFound([]);
+		const regex = new RegExp(".*" + e.target.value.toLowerCase() + ".*");
+		setFound(Object.values(sheep.reduce(function(records, sheep){
+			[sheep.firstname, sheep.lastname, `${sheep.firstname} ${sheep.lastname}`].map(name => {
+				console.log(name, regex.test(name.toLowerCase()), regex.exec(name.toLowerCase()));
+				if(regex.test(name.toLowerCase())) records[sheep.guid] = sheep;
+			});
+			return records;
+		},{} as Record<string, ISheep>)));
 	};
 	
 	const createSheep = () => {
@@ -104,12 +112,12 @@ export function PrayerFlockSearch({addSheep}:PrayerFlockSearchProps){
 		addSheep(sheep);
 	};
 	return <React.Fragment>
-			<FormGroup label="Prayer Targets" labelFor="sheep" labelInfo="(required)">
-			<InputGroup id="sheep" placeholder="Flock Member" onChange={onSearchChange} leftIcon="search" value={search} />
+			<FormGroup label="Related Sheep" labelFor="sheep">
+			<InputGroup id="sheep" placeholder="Flock Member" onChange={onSearchChange} leftIcon="search" value={search} autoComplete="off" />
 		</FormGroup>
 		{found.length > 0 ? <Card>
 			<Menu className="SearchResults">{found.map(sheep => 
-				<MenuItem onClick={() => addSheep(sheep)} icon="add" 
+				<MenuItem onClick={() => {addSheep(sheep); setSearch(""); setFound([])}} key={sheep.guid} icon="add" 
 					text={`${sheep.firstname} ${sheep.lastname}`}  />)}
 			</Menu>
 		</Card> : "" }

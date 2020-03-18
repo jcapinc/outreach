@@ -80,7 +80,6 @@ export function SavePrayerRequest(req:IPrayerRequest): MyThunk{
 		const state = getState();
 		const requests = state.currentState.requests;
 		const key = requests.findIndex(record => record.guid === req.guid);
-		// console.log(key,req,requests[key]);
 		requests[key] = req;
 		dispatch(SetPrayerRequests(requests));
 		dispatch(SendState());
@@ -92,10 +91,10 @@ export const SetPrayerRequests = (reqs:IPrayerRequest[]): Action => ({
 	payload: reqs
 });
 
-export function UpdatePrayerRequestList(prs:IPrayerRequest[]): Action {
-	return {type:"FETCH_PRAYER_REQUESTS_SUCCESS", payload: prs};
+export function AddPrayerRequest(req:IPrayerRequest): Action {
+	return {
+		type: "ADD_PRAYER_REQUEST",
+		payload: req
+	};
 }
 
-export function setFormPrayerRequest(request: IPrayerRequest): Action {
-	return {type: "SET_FORM_PRAYER_REQUEST", payload: request};
-}
