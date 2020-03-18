@@ -1,10 +1,11 @@
 import * as models from '../../ModelTypes';
+import { json } from 'express';
 
 export interface AppState {
 	login: ILoginState
 	stateError?: string;
 	currentState: models.IUserAppState;
-	initialState: models.IUserAppState;
+	initialState: string;
 }
 
 export interface ILoginState {
@@ -33,7 +34,7 @@ const defaultState: AppState = {
 		isLoading: false
 	},
 	currentState: defaultUserAppState,
-	initialState: defaultUserAppState
+	initialState: ""
 };
 
 
@@ -87,11 +88,15 @@ export default function reducer(state: AppState = defaultState, action: Action):
 			return {...state};
 		case "SEND_STATE_FAILURE":
 			return {...state, stateError: action.message};
-		case "SEND_STATE_SUCCESS":
+		case "FETCH_STATE_SUCCESS":
 			return {...state, 
-				initialState: {...action.payload as models.IUserAppState}, 
-				currentState: {...action.payload as models.IUserAppState}
+				initialState: JSON.stringify(action.payload),
+				currentState: Object.assign({}, action.payload as models.IUserAppState)
 			};
+		case "SET_PRAYER_REQUESTS":
+			return  {...state,currentState: {...state.currentState,
+				requests: action.payload as models.IPrayerRequest[]
+			} as models.IUserAppState};
 		//#endregion
 	}
 }

@@ -5,7 +5,7 @@ import { Callout } from '@blueprintjs/core';
 import { Link } from 'react-router-dom';
 
 export function Home(){
-	const requests = useSelector((state: AppState) => state.requests);
+	const requests = useSelector((state: AppState) => state.currentState.requests);
 	return <React.Fragment>
 		{requests.length > 0 ? <ul>
 			{requests.map(request => <li key={request.guid}>

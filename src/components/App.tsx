@@ -2,11 +2,12 @@ import React from 'react';
 import { Navigation } from './Navigation';
 import { BrowserRouter as Router, Switch, Route, useParams } from 'react-router-dom';
 import { Home } from './Home';
-import { useSelector } from 'react-redux';
-import { AppState } from '../store';
+import { useSelector, useDispatch } from 'react-redux';
+import { AppState, SavePrayerRequest } from '../store';
 import { Login } from './Login';
 import PrayerForm from './PrayerRequestForm';
 import { Callout } from '@blueprintjs/core';
+import { IPrayerRequest } from '../../ModelTypes';
 
 
 export function App(){
@@ -24,9 +25,11 @@ export function App(){
 }
 
 function ParameterPrayerForm(){
-	const state = useSelector((state:AppState) => state.requests);
+	const state = useSelector((state:AppState) => state.currentState.requests);
 	const {id} = useParams();
+	const dispatch = useDispatch();
 	const record = state?.find(record => record.guid === id);
-	if(record !== undefined) return <PrayerForm record={record} />;
+	const onSave = (req:IPrayerRequest) => dispatch(SavePrayerRequest(req));
+	if(record !== undefined) return <PrayerForm record={record} onSave={onSave} />;
 	return <Callout title="Could not find prayer record">There was a problem when loading the prayer record</Callout>;
 }

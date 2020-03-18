@@ -1,7 +1,7 @@
 import { Action } from './';
 import { ThunkAction} from 'redux-thunk';
 import { AppState } from '../store';
-import { IPrayerRequest } from '../../ModelTypes';
+import { IPrayerRequest, IUserAppState } from '../../ModelTypes';
 import { diff } from 'deep-diff';
 
 export interface LoginResponse{
@@ -59,7 +59,9 @@ export function SendState(): MyThunk {
 	return async function(dispatch, getState){
 		dispatch({type:"SEND_STATE_INIT"});
 		const state = getState();
-		const diffs = diff(state.initialState, state.currentState);
+		const diffs = diff(JSON.parse(state.initialState) as IUserAppState, state.currentState);
+		if(diffs === undefined) return console.log("Saved with no differences, canceling");
+		console.log(diffs);
 		const response = await fetch("/state",{
 			method:"POST",
 			body:JSON.stringify(diffs),
@@ -72,6 +74,23 @@ export function SendState(): MyThunk {
 		return dispatch(FetchState());
 	}
 }
+
+export function SavePrayerRequest(req:IPrayerRequest): MyThunk{
+	return async function(dispatch, getState){
+		const state = getState();
+		const requests = state.currentState.requests;
+		const key = requests.findIndex(record => record.guid === req.guid);
+		// console.log(key,req,requests[key]);
+		requests[key] = req;
+		dispatch(SetPrayerRequests(requests));
+		dispatch(SendState());
+	}
+}
+
+export const SetPrayerRequests = (reqs:IPrayerRequest[]): Action => ({
+	type: "SET_PRAYER_REQUESTS",
+	payload: reqs
+});
 
 export function UpdatePrayerRequestList(prs:IPrayerRequest[]): Action {
 	return {type:"FETCH_PRAYER_REQUESTS_SUCCESS", payload: prs};

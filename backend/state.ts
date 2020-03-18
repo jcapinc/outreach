@@ -40,6 +40,7 @@ const defaultState: IUserAppState = {
 
 const getUserPathGen = (options: StateOptions) => (request: Request): string => {
 	const decoded = decode(request.headers.authorization.split(" ")[1]) as IJWTPayload;
+	console.log(decoded);
 	return resolve(options.directory, `${decoded.guid}.json`)
 }
 
@@ -58,13 +59,17 @@ export default function state(app: Express, userOptions: Partial<StateOptions> =
 	});
 
 	app.post("/state", async function(request,response){
-		const userPath = getUserPath(request);
-		if(!(await exists(userPath))) await writeFile(userPath, JSON.stringify(defaultState));
-		const results = JSON.parse((await readFile(userPath)).toString()) as IUserAppState;
-		const changes = request.body as Diff<IUserAppState>[];
-		changes.map(diff => applyChange(results, undefined, diff));
-		await writeFile(userPath, JSON.stringify(results));
-		response.send({message:"success"});
+		try{
+			const userPath = getUserPath(request);
+			if(!(await exists(userPath))) await writeFile(userPath, JSON.stringify(defaultState));
+			const results = JSON.parse((await readFile(userPath)).toString()) as IUserAppState;
+			const changes = request.body as Diff<IUserAppState>[];
+			changes.map(diff => applyChange(results, undefined, diff));
+			await writeFile(userPath, JSON.stringify(results));
+			response.send({message:"success"});
+		} catch(err){
+			response.status(400).send({error: err.toString()});
+		}
 	});
 
 	app.get("/state/diff", async function(request,response){
