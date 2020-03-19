@@ -2,7 +2,7 @@ import { IUserAppState } from '../ModelTypes';
 import { UserRecord } from './login';
 import { resolve } from 'path';
 import { Database } from 'sqlite3';
-import { Express, Request } from 'express';
+import { Express, Request, RequestHandler } from 'express';
 import { decode } from 'jsonwebtoken';
 import { promisify } from 'util';
 import { Diff, diff, applyChange } from 'deep-diff';
@@ -29,7 +29,7 @@ export interface StateOptions{
 }
 
 const defaultStateOptions = {
-	directory: resolve(__dirname,"..","build","records")
+	directory: resolve(__dirname,"..","data","records")
 }
 
 export type IJWTPayload = Pick<UserRecord,"username" | "guid"> & {iat: number};
@@ -43,12 +43,12 @@ const getUserPathGen = (options: StateOptions) => (request: Request): string => 
 	return resolve(options.directory, `${decoded.guid}.json`)
 }
 
-export default function state(app: Express, userOptions: Partial<StateOptions> = {}) {
+export default function state(app: Express, secure: () => RequestHandler,  userOptions: Partial<StateOptions> = {}) {
 	const options = {...userOptions, ...defaultStateOptions};
 	const getUserPath = getUserPathGen(options);
 	exists(options.directory).then(exists => exists ? null : fs.mkdir(options.directory,() => null));
 
-	app.get("/state", async function(request,response) {
+	app.get("/state", secure(),  async function(request,response) {
 		const userPath = getUserPath(request);
 		if (!(await exists(userPath))) {
 			await writeFile(userPath, JSON.stringify(defaultState));
@@ -57,7 +57,7 @@ export default function state(app: Express, userOptions: Partial<StateOptions> =
 		return response.send(JSON.parse((await readFile(userPath)).toString()));
 	});
 
-	app.post("/state", async function(request,response){
+	app.post("/state", secure(),  async function(request,response){
 		try{
 			const userPath = getUserPath(request);
 			if(!(await exists(userPath))) await writeFile(userPath, JSON.stringify(defaultState));

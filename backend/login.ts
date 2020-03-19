@@ -1,21 +1,14 @@
-import { Express } from 'express';
+import { Express, RequestHandler } from 'express';
 import { Database } from './database';
 import expressJWT from "express-jwt";
 import jwt from "jsonwebtoken";
-import {Options as UnlessOptions} from 'express-unless';
 import md5 from 'md5';
 
 const secret = "temporary-make-me-configurable";
 
-export interface LoginOptions{
-	unless: UnlessOptions
-}
+export interface LoginOptions{}
 
-const defaultLoginOptions: LoginOptions = {
-	unless: {
-		path:["/api/login"]
-	}
-};
+const defaultLoginOptions: LoginOptions = {};
 
 export interface UserRecord {
 	username: string;
@@ -28,9 +21,8 @@ export default function login(
 	app: Express, 
 	db: Database, 
 	userOptions: Partial<LoginOptions> = {}
-): void {
+): () => RequestHandler {
 	const options:LoginOptions = Object.assign({}, defaultLoginOptions, userOptions) as LoginOptions;
-	app.use(expressJWT({secret}).unless(options.unless));
 	app.post("/api/login", async function(req,res){
 		try{
 			const {username, password} = req.body;
@@ -45,7 +37,6 @@ export default function login(
 					resolve(row);
 				});
 			});
-			
 			if(record === undefined) throw "Username or Password is Incorrect";
 			res.send({jwt: jwt.sign(record, secret)});
 			return;
@@ -54,4 +45,5 @@ export default function login(
 			return;
 		}
 	});
+	return () => expressJWT({secret});
 }

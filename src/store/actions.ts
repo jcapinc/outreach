@@ -47,6 +47,7 @@ export function logout(): Action {
 
 export function FetchState(): MyThunk{
 	return async function(dispatch, getState){
+		if(getState().login.jwt === undefined) return;
 		const response = await fetch("/state",{
 			headers:[["Authorization", "Bearer " + getState().login.jwt]]
 		});

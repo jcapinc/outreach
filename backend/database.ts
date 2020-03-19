@@ -2,9 +2,6 @@ import sqlite3 from 'sqlite3';
 import path from 'path';
 import util from 'util';
 import fs from 'fs';
-import { ApolloServer } from 'apollo-server-express';
-import GetQueries from './queries';
-import GetMutations from './mutations';
 
 const readFile = util.promisify(fs.readFile);
 
@@ -17,7 +14,7 @@ export interface IConnectionOptions {
 export { Database } from 'sqlite3';
 
 const defaultConnectionOptions: IConnectionOptions = {
-	dbpath: path.join(__dirname, "..","build","database.sqlite3"),
+	dbpath: path.join(__dirname, "..","data","database.sqlite3"),
 	schemapath: path.join(__dirname, "schema"),
 	log: console.log
 };
@@ -62,26 +59,3 @@ export async function connect(userOptions: Partial<IConnectionOptions> = default
 
 	return db;
 }
-
-export interface IGetSchemaOptions{
-	schemaPath: fs.PathLike;
-}
-
-const defaultSchemaOptions: IGetSchemaOptions = {
-	schemaPath: path.join(__dirname, "schema.graphql")
-};
-
-export const getSchema = async (
-	db: sqlite3.Database,
-	userOptions: Partial<IGetSchemaOptions> = {}
-) => {
-	const options = Object.assign(defaultSchemaOptions, userOptions) as IGetSchemaOptions;
-	const rawSchema = await readFile(options.schemaPath);
-	return new ApolloServer({
-		typeDefs: rawSchema.toString(),
-		resolvers: {
-			Query: GetQueries(db),
-			Mutation: GetMutations(db)
-		}
-	});
-};

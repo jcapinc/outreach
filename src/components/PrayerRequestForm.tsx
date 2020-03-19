@@ -175,11 +175,14 @@ export function PrayerFormEvent({event, editEvent}: IPrayerFormEventProps){
 		{edit ? <React.Fragment>
 			<RichTextEditor onChange={setWysiwygState} value={wysiwygState} className="body" />
 			<Button onClick={save}>Save</Button>
-		</React.Fragment> : <p dangerouslySetInnerHTML={{__html:event.message}}></p>}
+		</React.Fragment> : <React.Fragment>
+			<Button small onClick={() => setEdit(true)} style={{float:"right"}}>Edit</Button>
+			<p dangerouslySetInnerHTML={{__html:event.message}}></p>
+		</React.Fragment>}
 	</React.Fragment>
 }
 
-export interface IPrayerDeleteButtonProps{
+export interface IPrayerDeleteButtonProps {
 	record: IPrayerRequest;
 	redirect?: string;
 }
