@@ -40,7 +40,6 @@ const defaultState: IUserAppState = {
 
 const getUserPathGen = (options: StateOptions) => (request: Request): string => {
 	const decoded = decode(request.headers.authorization.split(" ")[1]) as IJWTPayload;
-	console.log(decoded);
 	return resolve(options.directory, `${decoded.guid}.json`)
 }
 

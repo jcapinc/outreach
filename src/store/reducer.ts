@@ -101,6 +101,11 @@ export default function reducer(state: AppState = defaultState, action: Action):
 			const newRequests = state.currentState.requests;
 			newRequests.push(action.payload as models.IPrayerRequest);
 			return {...state, currentState:{...state.currentState, requests: newRequests}};
+		case "DELETE_PRAYER_REQUEST":
+			const req = action.payload as models.IPrayerRequest;
+			const index = state.currentState.requests.findIndex(record => record.guid === req.guid);
+			state.currentState.requests.splice(index,1);
+			return {...state};
 		//#endregion
 	}
 }

@@ -98,3 +98,9 @@ export function AddPrayerRequest(req:IPrayerRequest): Action {
 	};
 }
 
+export function DeletePrayerRequest(req:IPrayerRequest): MyThunk {
+	return async function(dispatch, getState){
+		dispatch({type:"DELETE_PRAYER_REQUEST", payload: req});
+		dispatch(SendState());
+	}
+}

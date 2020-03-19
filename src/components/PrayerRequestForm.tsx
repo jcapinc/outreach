@@ -1,13 +1,13 @@
 import React from 'react';
 import { Card, FormGroup, InputGroup, Menu, MenuItem, Button } from '@blueprintjs/core';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import RichTextEditor, { EditorValue } from 'react-rte';
-import { AppState } from '../store';
-import { IPrayerRequest, ISheep } from '../../ModelTypes';
+import { AppState, DeletePrayerRequest } from '../store';
+import { IPrayerRequest, ISheep, IEventRecord } from '../../ModelTypes';
 import uniqid from 'uniqid';
 
 import './PrayerRequestForm.scss';
-import { format } from 'path';
+import { Redirect } from 'react-router-dom';
 
 export interface IPrayerFormProps{
 	record: IPrayerRequest;
@@ -17,6 +17,7 @@ export interface IPrayerFormProps{
 export default function PrayerForm({record, onSave}: IPrayerFormProps){
 	const [formState, setFormState] = React.useState<IPrayerRequest>(record);
 	const [wysiwygState, setWysiwygState] = React.useState(RichTextEditor.createValueFromString(formState.body,"html"));
+	const [editDescription, setEditDescription] = React.useState(record.body.length === 0);
 
 	const update = (field: keyof IPrayerRequest, input: string) => {
 		setFormState({...formState,[field]: input});
@@ -25,7 +26,7 @@ export default function PrayerForm({record, onSave}: IPrayerFormProps){
 	const genOnChange = (field: keyof IPrayerRequest) => (e:React.ChangeEvent<HTMLInputElement>) => 
 		update(field, e.target.value);
 	const genOnChangeRTE = (field: keyof IPrayerRequest) => (e:EditorValue) => {
-		update(field as keyof IPrayerRequest, e.toString('html'));
+		update(field as keyof IPrayerRequest, e.toString('html') || "");
 		setWysiwygState(e);
 	};
 
@@ -43,6 +44,7 @@ export default function PrayerForm({record, onSave}: IPrayerFormProps){
 	};
 
 	return <Card className="PrayerCardContainer">
+		<PrayerDeleteButton record={record} />
 		<h1 className="bp3-heading oneline">
 			Prayer Request{formState.topic !== undefined && formState.topic.length > 0 ? ": " + formState.topic : ""}
 		</h1>
@@ -66,21 +68,26 @@ export default function PrayerForm({record, onSave}: IPrayerFormProps){
 				</FormGroup>
 			</div>
 			<div className="cell">
-				<FormGroup label="Summary" labelFor="body">
+				{editDescription ? <FormGroup label="Summary" labelFor="body">
 					<RichTextEditor onChange={genOnChangeRTE("body")} value={wysiwygState} className="body" />
-				</FormGroup>
+				</FormGroup> : <React.Fragment>
+					<div style={{textAlign:"right"}}><Button onClick={() => setEditDescription(true)}>Edit Description</Button></div>
+					<p dangerouslySetInnerHTML={{__html: record.body}}></p>
+				</React.Fragment>}
 			</div>
 		</div>
-		<button onClick={() => onSave(formState)}>Save</button>
+		<Button onClick={() => {onSave(formState); setEditDescription(record.body.length === 0);}}>Save</Button>
+		<PrayerFormEvents events={record.events} addEvent={event => {formState.events.push(event);setFormState({...formState});}}
+			deleteEvent={() => undefined} editEvent={() => undefined} />
+		<Button onClick={() => {onSave(formState); setEditDescription(record.body.length === 0);}}>Save</Button>
 	</Card>;
 }
 
-export interface PrayerFlockSearchProps{
+export interface IPrayerFlockSearchProps{
 	addSheep: (sheep:ISheep) => void;
 }
 
-export function PrayerFlockSearch({addSheep}:PrayerFlockSearchProps){
-	let timeout: NodeJS.Timeout;
+export function PrayerFlockSearch({addSheep}:IPrayerFlockSearchProps){
 	const sheep = useSelector((state: AppState) => state.currentState.requests.reduce((current, req) => {
 		req.sheep.map(sheep => current.push(sheep));
 		return current;
@@ -123,4 +130,81 @@ export function PrayerFlockSearch({addSheep}:PrayerFlockSearchProps){
 		</Card> : "" }
 		{search.length > 0 ? <Button onClick={createSheep}>Add Sheep Named '{search}'?</Button> : ""}
 	</React.Fragment>;
+}
+
+export type EventMethod = (record:IEventRecord) => void;
+
+export interface IPrayerFormEventsProps{
+	events: IEventRecord[];
+	addEvent: EventMethod;
+	editEvent: EventMethod;
+	deleteEvent: EventMethod;
+}
+
+export function PrayerFormEvents({events, addEvent, editEvent,deleteEvent}:IPrayerFormEventsProps) {
+	const [wysiwygState, setWysiwygState] = React.useState(RichTextEditor.createEmptyValue());
+	const createEvent = () => {
+		addEvent({
+			date: (new Date()).toUTCString(),
+			guid: uniqid(),
+			message: wysiwygState.toString("html")
+		});
+		setWysiwygState(RichTextEditor.createEmptyValue());
+	}
+	return <React.Fragment>
+		<h2 className="bp3-header">Add Update</h2>
+		<RichTextEditor onChange={setWysiwygState} value={wysiwygState} className="body" />
+		<Button onClick={createEvent}>Add Update</Button>
+		{Array.from(events).reverse().map(event => <PrayerFormEvent event={event} editEvent={editEvent} />)}
+	</React.Fragment>;
+}
+
+export interface IPrayerFormEventProps{
+	event: IEventRecord;
+	editEvent: EventMethod;
+}
+
+export function PrayerFormEvent({event, editEvent}: IPrayerFormEventProps){
+	const [edit,setEdit] = React.useState(false);
+	const [wysiwygState, setWysiwygState] = React.useState(RichTextEditor.createValueFromString(event.message,"html"));
+	const save = () => {
+		editEvent(Object.assign({}, event, {message: wysiwygState.toString("html")}));
+		setEdit(false);
+	};
+	return <React.Fragment key={event.guid}>
+		<hr />
+		<p className="eventDate">{event.date}</p>
+		{edit ? <React.Fragment>
+			<RichTextEditor onChange={setWysiwygState} value={wysiwygState} className="body" />
+			<Button onClick={save}>Save</Button>
+		</React.Fragment> : <p dangerouslySetInnerHTML={{__html:event.message}}></p>}
+	</React.Fragment>
+}
+
+export interface IPrayerDeleteButtonProps{
+	record: IPrayerRequest;
+	redirect?: string;
+}
+
+export function PrayerDeleteButton({record, redirect = "/"}: IPrayerDeleteButtonProps){
+	const [confirm, setConfirm] = React.useState(false);
+	const [clickable, setClickable] = React.useState(false);
+	const [deleted, setDeleted] = React.useState(false);
+	const dispatch = useDispatch();
+	let confirmedTimeout: NodeJS.Timeout = setTimeout(() => null, 0);
+	const deleteClick = () => {
+		setConfirm(true);
+		setTimeout(() => setClickable(true), 1000);
+		confirmedTimeout = setTimeout(() => setConfirm(false), 10000);
+	}
+	const confirmClick = () => {
+		clearTimeout(confirmedTimeout);
+		setDeleted(true);
+		dispatch(DeletePrayerRequest(record) );
+	}
+	if(deleted) return <Redirect to={redirect} />
+	return <div className="deleteButton">
+		{confirm ? <Button onClick={confirmClick} disabled={!clickable} intent="primary">Are You Sure You Want To Delete?</Button> : 
+			<Button onClick={deleteClick} intent="danger">Delete Prayer Request</Button>}
+	</div>;
 }

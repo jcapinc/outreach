@@ -41,6 +41,7 @@ export const BaseSheepRecord: ISheep = {
 }
 
 export interface IEventRecord extends DBRecord {
+	guid: string;
 	message: string;
 	date: string;
 }
