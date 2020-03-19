@@ -1,13 +1,13 @@
 import React from 'react';
-import { Card, FormGroup, InputGroup, Menu, MenuItem, Button } from '@blueprintjs/core';
-import { useSelector, useDispatch } from 'react-redux';
 import RichTextEditor, { EditorValue } from 'react-rte';
+import { Card, FormGroup, InputGroup, Menu, MenuItem, Button, Tag } from '@blueprintjs/core';
+import { useSelector, useDispatch } from 'react-redux';
 import { AppState, DeletePrayerRequest } from '../store';
 import { IPrayerRequest, ISheep, IEventRecord } from '../../ModelTypes';
+import { Redirect } from 'react-router-dom';
 import uniqid from 'uniqid';
 
 import './PrayerRequestForm.scss';
-import { Redirect } from 'react-router-dom';
 
 export interface IPrayerFormProps{
 	record: IPrayerRequest;
@@ -53,13 +53,10 @@ export default function PrayerForm({record, onSave}: IPrayerFormProps){
 				<PrayerFlockSearch addSheep={addSheep} />
 				{formState.sheep.length > 0 ? <React.Fragment>
 					<p>Related Sheep:</p>
-					<ul>
 						{formState.sheep.map((sheep, index) => 
-							<li key={sheep.guid}>
-								{sheep.firstname} {sheep.lastname} &emsp;
-								<Button onClick={removeSheep(index)}>Remove</Button>
-							</li>)}
-					</ul>
+							<Tag key={sheep.guid} onRemove={removeSheep(index)}>
+								{sheep.firstname} {sheep.lastname}
+							</Tag>)}
 				</React.Fragment>: ""}
 			</div>
 			<div className="cell">
@@ -71,7 +68,7 @@ export default function PrayerForm({record, onSave}: IPrayerFormProps){
 				{editDescription ? <FormGroup label="Summary" labelFor="body">
 					<RichTextEditor onChange={genOnChangeRTE("body")} value={wysiwygState} className="body" />
 				</FormGroup> : <React.Fragment>
-					<div style={{textAlign:"right"}}><Button onClick={() => setEditDescription(true)}>Edit Description</Button></div>
+					<Button style={{float:'right'}} onClick={() => setEditDescription(true)}>Edit Description</Button>
 					<p dangerouslySetInnerHTML={{__html: record.body}}></p>
 				</React.Fragment>}
 			</div>
@@ -79,6 +76,7 @@ export default function PrayerForm({record, onSave}: IPrayerFormProps){
 		<Button onClick={() => {onSave(formState); setEditDescription(record.body.length === 0);}}>Save</Button>
 		<PrayerFormEvents events={record.events} addEvent={event => {formState.events.push(event);setFormState({...formState});}}
 			deleteEvent={() => undefined} editEvent={() => undefined} />
+		<hr />
 		<Button onClick={() => {onSave(formState); setEditDescription(record.body.length === 0);}}>Save</Button>
 	</Card>;
 }
@@ -186,7 +184,7 @@ export interface IPrayerDeleteButtonProps{
 	redirect?: string;
 }
 
-export function PrayerDeleteButton({record, redirect = "/"}: IPrayerDeleteButtonProps){
+export function PrayerDeleteButton({record, redirect = "/"}: IPrayerDeleteButtonProps) {
 	const [confirm, setConfirm] = React.useState(false);
 	const [clickable, setClickable] = React.useState(false);
 	const [deleted, setDeleted] = React.useState(false);
@@ -203,8 +201,6 @@ export function PrayerDeleteButton({record, redirect = "/"}: IPrayerDeleteButton
 		dispatch(DeletePrayerRequest(record) );
 	}
 	if(deleted) return <Redirect to={redirect} />
-	return <div className="deleteButton">
-		{confirm ? <Button onClick={confirmClick} disabled={!clickable} intent="primary">Are You Sure You Want To Delete?</Button> : 
-			<Button onClick={deleteClick} intent="danger">Delete Prayer Request</Button>}
-	</div>;
+	if(confirm) return <Button style={{float:'right'}} onClick={confirmClick} disabled={!clickable} intent="primary">Are You Sure You Want To Delete?</Button>;
+	else return <Button style={{float:'right'}}  onClick={deleteClick} intent="danger">Delete Prayer Request</Button>;
 }
