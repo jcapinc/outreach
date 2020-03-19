@@ -73,15 +73,15 @@ export default function PrayerForm({record, onSave}: IPrayerFormProps){
 				</React.Fragment>}
 			</div>
 		</div>
-		<Button onClick={() => {onSave(formState); setEditDescription(record.body.length === 0);}}>Save</Button>
+		<Button intent="primary" onClick={() => {onSave(formState); setEditDescription(record.body.length === 0);}}>Save</Button>
 		<PrayerFormEvents events={record.events} addEvent={event => {formState.events.push(event);setFormState({...formState});}}
 			deleteEvent={() => undefined} editEvent={() => undefined} />
 		<hr />
-		<Button onClick={() => {onSave(formState); setEditDescription(record.body.length === 0);}}>Save</Button>
+		<Button intent="primary" onClick={() => {onSave(formState); setEditDescription(record.body.length === 0);}}>Save</Button>
 	</Card>;
 }
 
-export interface IPrayerFlockSearchProps{
+export interface IPrayerFlockSearchProps {
 	addSheep: (sheep:ISheep) => void;
 }
 
