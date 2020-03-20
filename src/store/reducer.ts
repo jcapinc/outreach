@@ -1,5 +1,4 @@
 import * as models from '../../ModelTypes';
-import { json } from 'express';
 
 export interface AppState {
 	login: ILoginState

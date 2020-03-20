@@ -18,8 +18,10 @@ export default function PrayerForm({record, onSave}: IPrayerFormProps){
 	const [formState, setFormState] = React.useState<IPrayerRequest>(record);
 	const [wysiwygState, setWysiwygState] = React.useState(RichTextEditor.createValueFromString(formState.body,"html"));
 	const [editDescription, setEditDescription] = React.useState(record.body.length === 0);
+	const [touched, setTouched] = React.useState(false);
 
 	const update = (field: keyof IPrayerRequest, input: string) => {
+		setTouched(true);
 		setFormState({...formState,[field]: input});
 	};
 
@@ -34,14 +36,20 @@ export default function PrayerForm({record, onSave}: IPrayerFormProps){
 		if(formState.sheep.find(record => sheep.guid === record.guid) !== undefined) return;
 		formState.sheep.push(sheep);
 		setFormState({...formState});
+		setTouched(true);
 	}
 
 	const removeSheep = (index: number) => () => {
-		console.log(formState);
 		formState.sheep.splice(index,1);
-		console.log(formState);
 		setFormState({...formState});
+		setTouched(true);
 	};
+
+	const save = () => {
+		onSave(formState); 
+		setEditDescription(record.body.length === 0);
+		setTouched(false);
+	}
 
 	return <Card className="PrayerCardContainer">
 		<PrayerDeleteButton record={record} />
@@ -73,11 +81,11 @@ export default function PrayerForm({record, onSave}: IPrayerFormProps){
 				</React.Fragment>}
 			</div>
 		</div>
-		<Button intent="primary" onClick={() => {onSave(formState); setEditDescription(record.body.length === 0);}}>Save</Button>
+		<Button disabled={!touched} intent="primary" onClick={save}>Save</Button>
 		<PrayerFormEvents events={record.events} addEvent={event => {formState.events.push(event);setFormState({...formState});}}
 			deleteEvent={() => undefined} editEvent={() => undefined} />
 		<hr />
-		<Button intent="primary" onClick={() => {onSave(formState); setEditDescription(record.body.length === 0);}}>Save</Button>
+		<Button disabled={!touched} intent="primary" onClick={save}>Save</Button>
 	</Card>;
 }
 
@@ -99,8 +107,8 @@ export function PrayerFlockSearch({addSheep}:IPrayerFlockSearchProps){
 		const regex = new RegExp(".*" + e.target.value.toLowerCase() + ".*");
 		setFound(Object.values(sheep.reduce(function(records, sheep){
 			[sheep.firstname, sheep.lastname, `${sheep.firstname} ${sheep.lastname}`].map(name => {
-				console.log(name, regex.test(name.toLowerCase()), regex.exec(name.toLowerCase()));
 				if(regex.test(name.toLowerCase())) records[sheep.guid] = sheep;
+				return null;
 			});
 			return records;
 		},{} as Record<string, ISheep>)));
