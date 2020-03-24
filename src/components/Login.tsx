@@ -1,8 +1,8 @@
 import React, { KeyboardEvent } from 'react';
-import {Card, FormGroup, InputGroup, Button, Callout} from '@blueprintjs/core';
 import './Login.scss';
 import {useDispatch, useSelector} from 'react-redux';
 import { attemptlogin, AppState } from "../store";
+import * as S from 'semantic-ui-react';
 
 export const Login: React.FC<{}> = () => {
 	const [username, setUsername] = React.useState<string>();
@@ -19,17 +19,17 @@ export const Login: React.FC<{}> = () => {
 		if(e.keyCode === 13) onsubmit();
 	};
 	
-	return <Card className="LoginBox">
+	return <S.Card className="LoginBox">
 		<h1 className={"bp3-heading"}>Login</h1>
-		<FormGroup label="Username" labelFor="username" labelInfo="(required)">
-			<InputGroup id="username" autoFocus onChange={onchange(setUsername)} onKeyUp={onkeypress} />
-		</FormGroup>
-		<FormGroup label="Password" labelFor="password" labelInfo="(required)">
-			<InputGroup id="password" type="password" onChange={onchange(setPassword)} onKeyUp={onkeypress} />
-		</FormGroup>
-		{error !== undefined ? <Callout intent="danger">
-			<h4 className="bp3-heading">Error</h4>{error}
-		</Callout>: ""}
-		<Button className="loginSubmit" type="submit" onClick={onsubmit}>Submit</Button>
-	</Card>;
+		<S.FormGroup label="Username" labelFor="username" labelInfo="(required)">
+			<S.Input id="username" type="text" autoFocus onChange={onchange(setUsername)} onKeyUp={onkeypress} />
+		</S.FormGroup>
+		<S.FormGroup label="Password" labelFor="password" labelInfo="(required)">
+			<S.Input id="password" type="password" onChange={onchange(setPassword)} onKeyUp={onkeypress} />
+		</S.FormGroup>
+		{error !== undefined ? <S.Message negative={true}>
+			<S.Message.Header>Error</S.Message.Header>{error}
+		</S.Message>: ""}
+		<S.Button className="loginSubmit" type="submit" onClick={onsubmit}>Submit</S.Button>
+	</S.Card>;
 }
