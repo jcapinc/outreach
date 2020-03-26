@@ -1,47 +1,46 @@
-export interface DBRecord{
+export interface IDRecord{
 	guid: string;
 }
 
-export interface IUserAppState{
-	requests: IPrayerRequest[];
+export interface IFamily extends IDRecord{
+	surname: string;
+	members: IPerson[];
 }
 
-export interface IPrayerRequest extends DBRecord {
-	topic: string;
-	body: string;
-	status: string;
-	sheep: ISheep[];
-	tags: ITag[];
-	events: IEvent[];
-}
-
-export const BasePrayerRequest: IPrayerRequest = {
-	topic: "",
-	body: "",
-	status: "",
-	sheep: [],
-	tags: [],
-	events: []
-}
-
-export interface ITag{
-	text: string;
-}
-
-export interface ISheep extends DBRecord {
-	guid: string;
+export interface IPerson extends IDRecord{
 	firstname: string;
 	lastname: string;
+	familyPrimary: boolean;
+	phones: IContact<IPhone>[];
+	emails: IContact<IEmail>[];
+	addresses: IContact<IAddress>[];
+	activity: IActivity[];
 }
 
-export const BaseSheepRecord: ISheep = {
-	guid:"",
-	firstname: "",
-	lastname: ""
+export interface IContact<T> extends T{
+	type: "Home" | "Office" | "Cell";
+	primary: boolean;
 }
 
-export interface IEventRecord extends DBRecord {
-	guid: string;
-	message: string;
-	date: string;
+export interface IPhone{
+	number: string;
+}
+
+export interface IEmail{
+	address: string;
+}
+
+export type IState = string;
+
+export interface IAddress{
+	line1: string;
+	line2: string | undefined;
+	apptNo: string | undefined;
+	city: string;
+	state: IState;
+	zip: string;
+}
+
+export interface IActivity{
+	
 }
