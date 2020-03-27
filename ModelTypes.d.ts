@@ -2,12 +2,19 @@ export interface IDRecord{
 	guid: string;
 }
 
-export interface IFamily extends IDRecord{
+export interface TouchRecord{
+	creator: string;
+	created: string;
+	updated: string;
+	updatedBy:string;
+}
+
+export interface IFamily extends IDRecord, TouchRecord{
 	surname: string;
 	members: IPerson[];
 }
 
-export interface IPerson extends IDRecord{
+export interface IPerson extends IDRecord, TouchRecord{
 	firstname: string;
 	lastname: string;
 	familyPrimary: boolean;
@@ -41,6 +48,20 @@ export interface IAddress{
 	zip: string;
 }
 
-export interface IActivity{
-	
+export interface IActivity extends TouchRecord{
+	body: string;
+	creater: string;
+	created: string;
+	updated: string;
+}
+
+export interface IUserAppState{
+	families: IFamily[];
+}
+
+export interface IUserRecord {
+	username: string;
+	guid: string;
+	firstname?: string;
+	lastname?:string;
 }

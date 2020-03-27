@@ -1,8 +1,10 @@
 import { Action } from './';
 import { ThunkAction} from 'redux-thunk';
 import { AppState } from '../store';
-import { IPrayerRequest, IUserAppState } from '../../ModelTypes';
+import { IUserAppState, IFamily, IUserRecord } from '../../ModelTypes';
 import { diff } from 'deep-diff';
+import uniqid from 'uniqid';
+import { decode } from 'jsonwebtoken';
 
 export interface LoginResponse{
 	jwt?: string;
@@ -76,32 +78,20 @@ export function SendState(): MyThunk {
 	}
 }
 
-export function SavePrayerRequest(req:IPrayerRequest): MyThunk{
+export function CreateFamily(surname: string): MyThunk {
 	return async function(dispatch, getState){
 		const state = getState();
-		const requests = state.currentState.requests;
-		const key = requests.findIndex(record => record.guid === req.guid);
-		requests[key] = req;
-		dispatch(SetPrayerRequests(requests));
-		dispatch(SendState());
-	}
-}
-
-export const SetPrayerRequests = (reqs:IPrayerRequest[]): Action => ({
-	type: "SET_PRAYER_REQUESTS",
-	payload: reqs
-});
-
-export function AddPrayerRequest(req:IPrayerRequest): Action {
-	return {
-		type: "ADD_PRAYER_REQUEST",
-		payload: req
-	};
-}
-
-export function DeletePrayerRequest(req:IPrayerRequest): MyThunk {
-	return async function(dispatch, getState){
-		dispatch({type:"DELETE_PRAYER_REQUEST", payload: req});
-		dispatch(SendState());
+		const user = decode(state.login.jwt || "") as IUserRecord
+		const family: IFamily = {
+			surname,
+			creator: user.guid,
+			guid: uniqid(),
+			members: [],
+			created: (new Date()).toUTCString(),
+			updated: (new Date()).toUTCString(),
+			updatedBy: user.guid
+		};
+		dispatch({type: "CREATE_FAMILY", payload: family});
+		return dispatch(SendState);
 	}
 }

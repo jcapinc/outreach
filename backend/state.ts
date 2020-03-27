@@ -1,7 +1,5 @@
-import { IUserAppState } from '../ModelTypes';
-import { UserRecord } from './login';
+import { IUserRecord, IUserAppState } from '../ModelTypes';
 import { resolve } from 'path';
-import { Database } from 'sqlite3';
 import { Express, Request, RequestHandler } from 'express';
 import { decode } from 'jsonwebtoken';
 import { promisify } from 'util';
@@ -32,10 +30,10 @@ const defaultStateOptions = {
 	directory: resolve(__dirname,"..","data","records")
 }
 
-export type IJWTPayload = Pick<UserRecord,"username" | "guid"> & {iat: number};
+export type IJWTPayload = Pick<IUserRecord,"username" | "guid"> & {iat: number};
 
 const defaultState: IUserAppState = {
-	requests: []
+	families: []
 };
 
 const getUserPathGen = (options: StateOptions) => (request: Request): string => {

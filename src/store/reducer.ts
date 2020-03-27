@@ -22,7 +22,7 @@ export interface Action {
 }
 
 const defaultUserAppState:models.IUserAppState = {
-	requests: []
+	families: []
 }
 
 const defaultState: AppState = {
@@ -92,19 +92,12 @@ export default function reducer(state: AppState = defaultState, action: Action):
 				initialState: JSON.stringify(action.payload),
 				currentState: Object.assign({}, action.payload as models.IUserAppState)
 			};
-		case "SET_PRAYER_REQUESTS":
-			return  {...state,currentState: {...state.currentState,
-				requests: action.payload as models.IPrayerRequest[]
-			} as models.IUserAppState};
-		case "ADD_PRAYER_REQUEST":
-			const newRequests = state.currentState.requests;
-			newRequests.push(action.payload as models.IPrayerRequest);
-			return {...state, currentState:{...state.currentState, requests: newRequests}};
-		case "DELETE_PRAYER_REQUEST":
-			const req = action.payload as models.IPrayerRequest;
-			const index = state.currentState.requests.findIndex(record => record.guid === req.guid);
-			state.currentState.requests.splice(index,1);
-			return {...state};
+		case "CREATE_FAMILY":
+			return {...state,
+				currentState:{...state.currentState, 
+					families: [...state.currentState.families, action.payload as models.IFamily]
+				}
+			};
 		//#endregion
 	}
 }
