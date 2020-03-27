@@ -1,7 +1,7 @@
 import { Action } from './';
 import { ThunkAction} from 'redux-thunk';
 import { AppState } from '../store';
-import { IUserAppState, IFamily, IUserRecord } from '../../ModelTypes';
+import * as MT from '../../ModelTypes';
 import { diff } from 'deep-diff';
 import uniqid from 'uniqid';
 import { decode } from 'jsonwebtoken';
@@ -62,7 +62,7 @@ export function SendState(): MyThunk {
 	return async function(dispatch, getState){
 		dispatch({type:"SEND_STATE_INIT"});
 		const state = getState();
-		const diffs = diff(JSON.parse(state.initialState) as IUserAppState, state.currentState);
+		const diffs = diff(JSON.parse(state.initialState) as MT.IUserAppState, state.currentState);
 		if(diffs === undefined) return console.log("Saved with no differences, canceling");
 		console.log(diffs);
 		const response = await fetch("/state",{
@@ -78,20 +78,25 @@ export function SendState(): MyThunk {
 	}
 }
 
-export function CreateFamily(surname: string): MyThunk {
+export function CreateFamily(surname: string, id: string = uniqid()): MyThunk {
 	return async function(dispatch, getState){
 		const state = getState();
-		const user = decode(state.login.jwt || "") as IUserRecord
-		const family: IFamily = {
+		const user = decode(state.login.jwt || "") as MT.IUserRecord
+		const family: MT.IFamily = {
 			surname,
 			creator: user.guid,
-			guid: uniqid(),
+			guid: id,
 			members: [],
 			created: (new Date()).toUTCString(),
 			updated: (new Date()).toUTCString(),
 			updatedBy: user.guid
 		};
 		dispatch({type: "CREATE_FAMILY", payload: family});
-		return dispatch(SendState);
+		return dispatch(SendState());
 	}
+}
+
+export function GetPrimaryContact(people:MT.IPerson[]){
+	const found = people.find(person => person.familyPrimary);
+	return found || people[0];
 }

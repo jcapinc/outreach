@@ -17,6 +17,7 @@ export interface IFamily extends IDRecord, TouchRecord{
 export interface IPerson extends IDRecord, TouchRecord{
 	firstname: string;
 	lastname: string;
+	gender: "Man" | "Woman";
 	familyPrimary: boolean;
 	phones: IContact<IPhone>[];
 	emails: IContact<IEmail>[];

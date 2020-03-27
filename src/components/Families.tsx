@@ -26,13 +26,20 @@ export function FamilyForm({id}:{id: string}){
 		<S.Message.Header>Family Not Found</S.Message.Header>
 		Could not find this family
 	</S.Message>;
-	return <FamilyFormMarkup family={family} />;
+	return <FamilyFormMarkup family={family} onSave={() => null} />;
 }
 
-export interface IFamilyFormMarkupProps{
+export interface IFamilyFormMarkupProps {
 	family: IFamily;
+	onSave: (family: IFamily) => void;
 }
 
 export function FamilyFormMarkup(props: IFamilyFormMarkupProps){
-	return <div></div>;
+	const [family, setFamily] = React.useState(props.family);
+	const updateRecord = (key: keyof IFamily) => (e: React.ChangeEvent<HTMLInputElement>) => 
+		setFamily({...family,[key]: e.target.value})
+	return <React.Fragment>
+		<S.Input label="Surname" value={family.surname} onChange={updateRecord("surname")} />
+		<Button primary onClick={() => props.onSave(family)}>Save</Button>
+	</React.Fragment>;
 }

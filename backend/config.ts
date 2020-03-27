@@ -21,6 +21,6 @@ export interface IConfig{
 	secret: string;
 }
 
-export default function getConfig(): IConfig{
+export default function getConfig(): IConfig {
 	return conf as unknown as IConfig; // 😈 this is evil and I regret nothing 😈
 }

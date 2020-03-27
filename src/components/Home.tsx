@@ -2,11 +2,25 @@ import React from 'react';
 import * as S from 'semantic-ui-react';
 import { IFamily } from '../../ModelTypes';
 import * as families from './Families';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { CreateFamily, AppState } from '../store';
+import uniqid from "uniqid";
+import { Redirect, Link } from 'react-router-dom';
 
 export function Home(){
 	const dispatch = useDispatch();
-	return <HomeMarkup families={[]} onCreateFamily={() => null} />
+	const families = useSelector((state: AppState) => state.currentState.families);
+	const [state, setState] = React.useState({
+		familyRedirect: ""
+	});
+	const onCreateFamily = (name: string) => {
+		const id = uniqid();
+		dispatch(CreateFamily(name, id));
+		setState({familyRedirect: id})
+	}
+	if(state.familyRedirect.length > 0) 
+		return <Redirect to={"/family/" + state.familyRedirect} />
+	return <HomeMarkup families={families} onCreateFamily={onCreateFamily} />
 }
 
 export interface IHomeMarkupProps{
@@ -16,12 +30,14 @@ export interface IHomeMarkupProps{
 
 export function HomeMarkup(props: IHomeMarkupProps) {
 	return <div style={{textAlign:"center"}}>
-	{props.families.length === 0 ? <React.Fragment>
-		<S.Message>
+		{props.families.length === 0 ? <S.Message>
 			<S.Message.Header>There are No Families</S.Message.Header>
 			Create a new family to get started.
-		</S.Message> 
+		</S.Message> : <S.List bulleted>
+			{props.families.map(record => <S.List.Item key={record.guid}>
+				<Link to={"/family/"+record.guid}>{record.surname}</Link>
+			</S.List.Item>)}
+		</S.List>}
 		<families.CreateFamilyForm onSubmit={props.onCreateFamily} />
-	</React.Fragment>: ""}
-</div>;
+	</div>;
 }
