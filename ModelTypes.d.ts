@@ -19,6 +19,7 @@ export interface IPerson extends IDRecord, TouchRecord{
 	lastname: string;
 	gender: "Man" | "Woman";
 	familyPrimary: boolean;
+	role: IMemberFamilyRole;
 	phones: IContact<IPhone>[];
 	emails: IContact<IEmail>[];
 	addresses: IContact<IAddress>[];
@@ -66,3 +67,5 @@ export interface IUserRecord {
 	firstname?: string;
 	lastname?:string;
 }
+
+export type IMemberFamilyRole = "Mother" | "Father" | "Child" | "Other";
