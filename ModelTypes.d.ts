@@ -20,28 +20,29 @@ export interface IPerson extends IDRecord, TouchRecord{
 	gender: "Man" | "Woman";
 	familyPrimary: boolean;
 	role: IMemberFamilyRole;
-	phones: IContact<IPhone>[];
-	emails: IContact<IEmail>[];
-	addresses: IContact<IAddress>[];
+	phones: IPhone[];
+	emails: IEmail[];
+	addresses: IAddress[];
 	activity: IActivity[];
 }
 
-export interface IContact<T> extends T{
+export interface IContact {
 	type: "Home" | "Office" | "Cell";
 	primary: boolean;
 }
 
-export interface IPhone{
+
+export interface IPhone extends IContact{
 	number: string;
 }
 
-export interface IEmail{
+export interface IEmail extends IContact{
 	address: string;
 }
 
 export type IState = string;
 
-export interface IAddress{
+export interface IAddress extends IContact{
 	line1: string;
 	line2: string | undefined;
 	apptNo: string | undefined;

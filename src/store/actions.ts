@@ -96,7 +96,27 @@ export function CreateFamily(surname: string, id: string = uniqid()): MyThunk {
 	}
 }
 
-export function GetPrimaryContact(people:MT.IPerson[]){
+export function SaveFamily(family: MT.IFamily): MyThunk {
+	return async function(dispatch, getState){
+		dispatch({type: "UPDATE_FAMILY", payload: family});
+		return dispatch(SendState());
+	}
+}
+
+export function DeleteFamily(family: Pick<MT.IFamily, "guid">): MyThunk {
+	return async function(dispatch){
+		dispatch({type:"DELETE_FAMILY", payload: family});
+		return dispatch(SendState());
+	}
+}
+
+export function GetPrimaryMember(people:MT.IPerson[]){
 	const found = people.find(person => person.familyPrimary);
 	return found || people[0];
+}
+
+export function GetPrimaryContact<T extends MT.IContact>(contactList:T[]): T | undefined{
+	if(contactList.length === 0) return undefined;
+	const found = contactList.find(contact => contact.primary);
+	return found || contactList[0];
 }

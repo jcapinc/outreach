@@ -98,6 +98,18 @@ export default function reducer(state: AppState = defaultState, action: Action):
 					families: [...state.currentState.families, action.payload as models.IFamily]
 				}
 			};
+		case "UPDATE_FAMILY": return (function(){
+			const alteredFam = action.payload as models.IFamily;
+			const position = state.currentState.families.findIndex(fam => fam.guid === alteredFam.guid);
+			const newFamArray = state.currentState.families;
+			newFamArray[position] = alteredFam;
+			return {...state, currentState: {...state.currentState,families: Array.from(newFamArray)}};
+		})();
+		case "DELETE_FAMILY": return (function(){
+			const {guid:deleteme} = action.payload as Pick<models.IFamily,"guid">;
+			const newFamArray = state.currentState.families.filter(family => family.guid !== deleteme);
+			return {...state, currentState: {...state.currentState,families: Array.from(newFamArray)}};
+		})();
 		//#endregion
 	}
 }
