@@ -1,19 +1,21 @@
 import { decode } from 'jsonwebtoken';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Redirect } from 'react-router-dom';
+import { Redirect, Link } from 'react-router-dom';
 import * as S from 'semantic-ui-react';
 import { Button, Input } from 'semantic-ui-react';
 import uniqid from 'uniqid';
 import { IFamily, IPerson, IUserRecord } from '../../ModelTypes';
-import { AppState, DeleteFamily, SaveFamily } from '../store';
-import { AddPersonForm, PersonList } from './People';
+import { AppState, DeleteFamily, SaveFamily, GetPrimaryMember, GetPrimaryContact } from '../store';
+import { AddPersonForm, PersonList, PersonFormMarkup } from './People';	
+import dayjs from 'dayjs';
 
 const emptyPersonRecord = (firstname: string, lastname: string, creatorID: string, primary = false): IPerson => ({
 	activity: [],
 	addresses: [],
 	created: (new Date()).toString(),
 	creator: creatorID,
+	dob: dayjs().subtract(18,"year").toDate().toString(),
 	emails: [],
 	familyPrimary: primary,
 	firstname, lastname,
@@ -38,6 +40,39 @@ export function CreateFamilyForm(props: ICreateFamilyFormProps){
 		<Input placeholder="New Family Surname" onChange={(e) => setValue(e.target.value)} value={value} />
 		<Button onClick={() => props.onSubmit(value)}>Create</Button>
 	</div>;
+}
+
+export interface IFamilyListProps{
+	families: IFamily[];
+}
+
+export function FamilyList({families}: IFamilyListProps){
+	return <S.Table>
+		<S.Table.Header>
+			<S.Table.Row>
+				<S.Table.HeaderCell>Surname</S.Table.HeaderCell>
+				<S.Table.HeaderCell>Primary Contact</S.Table.HeaderCell>
+				<S.Table.HeaderCell>Primary Contact Phone</S.Table.HeaderCell>
+				<S.Table.HeaderCell>Primary Contact Email</S.Table.HeaderCell>
+				<S.Table.HeaderCell>Member Count</S.Table.HeaderCell>
+			</S.Table.Row>
+		</S.Table.Header>
+		<S.Table.Body>
+			{families.map(family => {
+				const primary = GetPrimaryMember(family.members);
+				const primaryEmail = GetPrimaryContact(primary?.emails);
+				const primaryPhone = GetPrimaryContact(primary?.phones);
+				console.log("primaries", primary, primaryEmail, primaryPhone)
+				return <S.Table.Row key={family.guid}>
+					<S.Table.Cell><Link to={"/family/"+family.guid}>{family.surname}</Link></S.Table.Cell>
+					<S.Table.Cell>{primary ? `${primary.firstname} ${primary.lastname}` : <i>No Primary Contact</i>}</S.Table.Cell>
+					<S.Table.Cell>{primaryPhone ? <a href={"tel:"+primaryPhone.number}>{primaryPhone.number}</a> : <i>No Primary Phone</i>}</S.Table.Cell>
+					<S.Table.Cell>{primaryEmail ? <a href={"email:"+primaryEmail.address}>${primaryEmail.address}</a> : <i>No Primary Email</i>}</S.Table.Cell>
+					<S.Table.Cell>{family.members.length}</S.Table.Cell>
+			</S.Table.Row>;
+			})}
+		</S.Table.Body>
+	</S.Table>;
 }
 
 export function FamilyForm({id}:{id: string}){
@@ -78,6 +113,14 @@ export function FamilyFormMarkup(props: IFamilyFormMarkupProps){
 	};
 	const updateRecord = (key: keyof IFamily) => (e: React.ChangeEvent<HTMLInputElement>) => 
 		setState({...state,family: { ...state.family, [key]: e.target.value}});
+	const primaryMember = GetPrimaryMember(state.family.members);
+	const primaryMemberOnChange = (person: IPerson) => {
+		const newArray = Array.from(state.family.members);
+		const keyof = newArray.findIndex(member => person.guid === member.guid);
+		if(keyof === -1) throw new Error("Could not find member to change by id");
+		newArray[keyof] = person;
+		setState({...state, family: Object.assign({},state.family, {members: newArray} as Partial<IFamily>)});
+	};
 	return <React.Fragment>
 		<div style={{float:"right"}}>
 		{state.confirmDelete ? 
@@ -92,6 +135,10 @@ export function FamilyFormMarkup(props: IFamilyFormMarkupProps){
 				{state.family.surname} Family &nbsp;
 				<S.Icon name="edit" style={{cursor:"pointer",fontSize:"0.5em",lineHeight:"1em"}} onClick={() => setState({...state,editSurname: true})} />
 			</S.Header>
+		</React.Fragment>}
+		{primaryMember === undefined ? "" : <React.Fragment>
+			<S.Header as="h2">Primary Contact</S.Header>
+			<PersonFormMarkup person={primaryMember} onChange={primaryMemberOnChange} />
 		</React.Fragment>}
 		{state.family.members.length === 0 ? <S.Message>
 			<S.Message.Header>There Are No Members</S.Message.Header>

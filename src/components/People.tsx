@@ -9,16 +9,40 @@ export interface IPersonFormProps{
 	onChange: (person: IPerson) => void;
 }
 
-export function PersonFormMarkup(props: IPersonFormProps){
-	return <div></div>;
+export function PersonFormMarkup(props: IPersonFormProps) {
+	const [state, setState] = React.useState({person: props.person})
+	const update = (field: keyof IPerson) => (e: React.ChangeEvent<HTMLInputElement>) => 
+		setState({...state, person: {...state.person, [field]: e.target.value}});
+	const updateGender = (e: React.SyntheticEvent<HTMLElement>, data: S.DropdownProps) => 
+		setState({...state, person: {...state.person, gender: data.value as "Man" | "Woman"}});
+	const TextField = ({label, field}:{label: string, field: keyof IPerson}) => <S.Grid.Column>
+		<S.Form.Field>
+			<label>{label}</label>
+			<S.Input value={state.person[field]} onchange={update(field)} fluid />
+		</S.Form.Field>
+	</S.Grid.Column>;
+	const genderOptions = ["Man","Woman"].map(key => ({key,value: key,text: key}))
+	return <S.Form>
+		<S.Grid columns={4}>
+			<TextField label="First Name" field="firstname" />
+			<TextField label="Last Name" field="lastname" />
+			<S.Grid.Column>
+				<S.Form.Field>
+					<label>Gender</label>
+					<S.Dropdown label="Gender" labeled value={state.person.gender} 
+						onChange={updateGender} options={genderOptions} fluid selection />
+				</S.Form.Field>
+			</S.Grid.Column>
+		</S.Grid>
+	</S.Form>;
 }
 
-export interface IPersonListProps{
+export interface IPersonListProps {
 	people: IPerson[];
 	family: string;
 }
 
-export function PersonList(props: IPersonListProps){
+export function PersonList(props: IPersonListProps) {
 	return <React.Fragment>
 		<S.Header as="h2">People</S.Header>
 		<S.Table singleLine>
@@ -44,16 +68,16 @@ export function PersonList(props: IPersonListProps){
 	</React.Fragment>;
 }
 
-export function PhoneCell({phone}:{phone: IPhone | undefined}){
+export function PhoneCell({phone}:{phone: IPhone | undefined}) {
 	if(phone === undefined) return <S.Table.Cell>
 		<i>No Phone Number Saved</i>
 	</S.Table.Cell>;
 	return <S.Table.Cell>
-		<a href={"phone:"+phone.number} target="new">>{phone.number}</a>
+		<a href={"tel:"+phone.number} target="new">>{phone.number}</a>
 	</S.Table.Cell>;
 }
 
-export function EmailCell({email}:{email: IEmail | undefined}){
+export function EmailCell({email}:{email: IEmail | undefined}) {
 	if(email === undefined) return <S.TableCell>
 		<i>No Email Address Defined</i>
 	</S.TableCell>;
@@ -62,7 +86,7 @@ export function EmailCell({email}:{email: IEmail | undefined}){
 	</S.TableCell>
 }
 
-export interface IAddPersonFormProps{
+export interface IAddPersonFormProps {
 	onSubmit: (name: string) => void;
 }
 

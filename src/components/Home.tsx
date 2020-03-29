@@ -5,7 +5,7 @@ import * as families from './Families';
 import { useDispatch, useSelector } from 'react-redux';
 import { CreateFamily, AppState } from '../store';
 import uniqid from "uniqid";
-import { Redirect, Link } from 'react-router-dom';
+import { Redirect } from 'react-router-dom';
 
 export function Home(){
 	const dispatch = useDispatch();
@@ -33,11 +33,7 @@ export function HomeMarkup(props: IHomeMarkupProps) {
 		{props.families.length === 0 ? <S.Message>
 			<S.Message.Header>There are No Families</S.Message.Header>
 			Create a new family to get started.
-		</S.Message> : <S.List bulleted>
-			{props.families.map(record => <S.List.Item key={record.guid}>
-				<Link to={"/family/"+record.guid}>{record.surname}</Link>
-			</S.List.Item>)}
-		</S.List>}
+		</S.Message> : <families.FamilyList families={props.families} />}
 		<families.CreateFamilyForm onSubmit={props.onCreateFamily} />
 	</div>;
 }

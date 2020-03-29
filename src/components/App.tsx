@@ -7,7 +7,6 @@ import { AppState} from '../store';
 import { Login } from './Login';
 import { FamilyForm } from './Families';
 import * as S from 'semantic-ui-react';
-import { IPerson } from '../../ModelTypes';
 
 
 export function App(){
@@ -18,7 +17,7 @@ export function App(){
 			<Switch>
 				<Route exact path="/" component={Home} />
 				<Route path="/family/:id/member/:memberid" component={FamilyRoute} />
-				<Route path="/family/:id" component={FamilyRoute} />
+				<Route exact path="/family/:id" component={FamilyRoute} />
 			</Switch>
 		</React.Fragment> : 
 		<Login /> }
@@ -29,9 +28,7 @@ export function FamilyRoute(){
 	let {id} = useParams();
 	const surname = useSelector((state: AppState) => state.currentState.families.find(rec => rec.guid === id)?.surname || "");
 	return <React.Fragment>
-		
 			<FamilyBreadCrumb familyid={id} familysurname={surname} />
-		
 		<FamilyForm id={id || ""} />
 	</React.Fragment>;
 }
@@ -66,8 +63,7 @@ export function FamilyBreadCrumb({children, familyid, familysurname}:IFamilyBrea
 			{children || ""}
 		</S.Breadcrumb>
 		<hr />
-	</div>
-	;
+	</div>;
 }
 
 export interface IMemberBreadCrumbProps{

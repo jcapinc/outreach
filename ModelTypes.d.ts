@@ -20,6 +20,7 @@ export interface IPerson extends IDRecord, TouchRecord{
 	gender: "Man" | "Woman";
 	familyPrimary: boolean;
 	role: IMemberFamilyRole;
+	dob: string;
 	phones: IPhone[];
 	emails: IEmail[];
 	addresses: IAddress[];

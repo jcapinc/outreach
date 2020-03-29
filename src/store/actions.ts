@@ -110,12 +110,15 @@ export function DeleteFamily(family: Pick<MT.IFamily, "guid">): MyThunk {
 	}
 }
 
-export function GetPrimaryMember(people:MT.IPerson[]){
+export function GetPrimaryMember(people:MT.IPerson[] | undefined){
+	if(people === undefined) return undefined;
+	if(people.length === 0) return undefined;
 	const found = people.find(person => person.familyPrimary);
 	return found || people[0];
 }
 
-export function GetPrimaryContact<T extends MT.IContact>(contactList:T[]): T | undefined{
+export function GetPrimaryContact<T extends MT.IContact>(contactList:T[] | undefined): T | undefined{
+	if(contactList === undefined) return undefined;
 	if(contactList.length === 0) return undefined;
 	const found = contactList.find(contact => contact.primary);
 	return found || contactList[0];
