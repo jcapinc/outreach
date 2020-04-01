@@ -123,3 +123,20 @@ export function GetPrimaryContact<T extends MT.IContact>(contactList:T[] | undef
 	const found = contactList.find(contact => contact.primary);
 	return found || contactList[0];
 }
+
+export function UpdateFamilyPerson(familyID: string, person:MT.IPerson): MyThunk{
+	return async function(dispatch,getState){
+		const family = getState().currentState.families.find(family => family.guid === familyID);
+		if(family === undefined) return false;
+		const personKey = family.members.findIndex(member => member.guid === person.guid);
+		if(personKey === -1) family.members.push(person);
+		else family.members[personKey] = person;
+		let hasPrimary = false;
+		family.members = family.members.map(member => {
+			if(hasPrimary) return {...member, familyPrimary: false};
+			if(member.familyPrimary) hasPrimary = true;
+			return member;
+		});
+		return dispatch(SaveFamily(Object.assign({}, family)));
+	}
+}

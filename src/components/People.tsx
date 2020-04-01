@@ -2,14 +2,26 @@ import React from 'react';
 import { IPerson, IPhone, IEmail } from '../../ModelTypes';
 import * as S from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
-import { GetPrimaryContact } from '../store';
+import { GetPrimaryContact, UpdateFamilyPerson } from '../store';
+import { useDispatch } from 'react-redux';
 
 export interface IPersonFormProps{
+	person:IPerson;
+	familyID: string;
+}
+
+export function PersonForm(props: IPersonFormProps){
+	const dispatch = useDispatch();
+	return <PersonFormMarkup person={props.person} 
+		onChange={person => dispatch(UpdateFamilyPerson(props.familyID,person))}/>
+}
+
+export interface IPersonFormMarkupProps{
 	person: IPerson;
 	onChange: (person: IPerson) => void;
 }
 
-export function PersonFormMarkup(props: IPersonFormProps) {
+export function PersonFormMarkup(props: IPersonFormMarkupProps) {
 	const [state, setState] = React.useState({person: props.person})
 	const update = (field: keyof IPerson) => (e: React.ChangeEvent<HTMLInputElement>) => 
 		setState({...state, person: {...state.person, [field]: e.target.value}});
@@ -23,7 +35,7 @@ export function PersonFormMarkup(props: IPersonFormProps) {
 	</S.Grid.Column>;
 	const genderOptions = ["Man","Woman"].map(key => ({key,value: key,text: key}))
 	return <S.Form>
-		<S.Grid columns={4}>
+		<S.Grid columns={3}>
 			<TextField label="First Name" field="firstname" />
 			<TextField label="Last Name" field="lastname" />
 			<S.Grid.Column>
@@ -34,6 +46,7 @@ export function PersonFormMarkup(props: IPersonFormProps) {
 				</S.Form.Field>
 			</S.Grid.Column>
 		</S.Grid>
+		<S.Grid Columns={4}></S.Grid>
 	</S.Form>;
 }
 
@@ -56,7 +69,7 @@ export function PersonList(props: IPersonListProps) {
 			<S.Table.Body>
 				{props.people.map(person => <S.Table.Row key={person.guid}>
 					<S.Table.Cell>
-						<Link to={"/family/"+props.family+"/person/"+person.guid}>
+						<Link to={"/family/"+props.family+"/member/"+person.guid}>
 							{person.firstname} {person.lastname}
 						</Link>
 					</S.Table.Cell>

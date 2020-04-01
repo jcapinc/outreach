@@ -130,12 +130,10 @@ export function FamilyFormMarkup(props: IFamilyFormMarkupProps){
 		{state.editSurname ? <React.Fragment>
 			<S.Input label="Surname" value={state.family.surname} onChange={updateRecord("surname")} /> 
 			<Button primary onClick={() => {setState({...state,editSurname: false});props.onSave(state.family); }}>Save Surname</Button>
-		</React.Fragment>: <React.Fragment>
-			<S.Header as='h1'>
-				{state.family.surname} Family &nbsp;
-				<S.Icon name="edit" style={{cursor:"pointer",fontSize:"0.5em",lineHeight:"1em"}} onClick={() => setState({...state,editSurname: true})} />
-			</S.Header>
-		</React.Fragment>}
+		</React.Fragment>: <S.Header as='h1'>
+			{state.family.surname} Family &nbsp;
+			<S.Icon name="edit" style={{cursor:"pointer",fontSize:"0.5em",lineHeight:"1em"}} onClick={() => setState({...state,editSurname: true})} />
+		</S.Header>}
 		{primaryMember === undefined ? "" : <React.Fragment>
 			<S.Header as="h2">Primary Contact</S.Header>
 			<PersonFormMarkup person={primaryMember} onChange={primaryMemberOnChange} />
@@ -147,6 +145,7 @@ export function FamilyFormMarkup(props: IFamilyFormMarkupProps){
 		<AddPersonForm onSubmit={firstname => setState({...state, family:{...state.family, members:[...state.family.members, 
 			emptyPersonRecord(firstname, state.family.surname, props.creator, state.family.members.length === 0)
 		]}})}/>
+		<hr />A
 		<Button primary onClick={() => props.onSave(state.family)}>Save</Button>
 	</React.Fragment>;
 }

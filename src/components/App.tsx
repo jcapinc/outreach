@@ -7,6 +7,7 @@ import { AppState} from '../store';
 import { Login } from './Login';
 import { FamilyForm } from './Families';
 import * as S from 'semantic-ui-react';
+import { PersonForm } from './People';
 
 
 export function App(){
@@ -16,12 +17,37 @@ export function App(){
 			<Navigation />
 			<Switch>
 				<Route exact path="/" component={Home} />
-				<Route path="/family/:id/member/:memberid" component={FamilyRoute} />
+				<Route exact path="/family/:familyid/member/:memberid" component={FamilyMemberRoute} />
 				<Route exact path="/family/:id" component={FamilyRoute} />
+				<Route component={_404} />
 			</Switch>
 		</React.Fragment> : 
 		<Login /> }
 	</Router>;
+}
+
+function _404(){
+	return <S.Message><S.Message.Header>Route Does Not Exist</S.Message.Header></S.Message>
+}
+
+function FamilyMemberRoute(){
+	const {familyid, memberid} = useParams();
+	console.log(familyid, memberid);
+	const [member, surname] = useSelector((state: AppState) => [state.currentState.families.find(family => 
+		family.guid === familyid)?.members.find(member => member.guid === memberid),
+		state.currentState.families.find(family => family.guid === familyid)?.surname]);
+	if(member === undefined) return <S.Message>
+		<S.Message.Header>Could Not Find Family Member</S.Message.Header>
+		This family member does not appear to exist
+		<Link to={"/family/"+familyid}>Return to Family</Link>
+	</S.Message>
+	return <React.Fragment>
+		<FamilyBreadCrumb familyid={familyid || ""} familysurname={surname}>
+			<MemberBreadCrumb familyid={familyid} memberid={memberid} 
+				membername={`${member.firstname} ${member.lastname}`}/>
+		</FamilyBreadCrumb>
+		<PersonForm familyID={familyid || ""} person={member} />
+	</React.Fragment>
 }
 
 export function FamilyRoute(){
