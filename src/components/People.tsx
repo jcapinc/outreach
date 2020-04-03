@@ -1,5 +1,5 @@
 import React from 'react';
-import { IPerson, IPhone, IEmail } from '../../ModelTypes';
+import { IPerson, IPhone, IEmail, IMemberFamilyRole } from '../../ModelTypes';
 import * as S from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
 import { GetPrimaryContact, UpdateFamilyPerson } from '../store';
@@ -23,26 +23,57 @@ export interface IPersonFormMarkupProps{
 
 export function PersonFormMarkup(props: IPersonFormMarkupProps) {
 	const [state, setState] = React.useState({person: props.person})
+	const setPerson = (field: keyof IPerson,value: any) => {
+		const newstate = {...state, person: {...state.person, [field]: value}};
+		setState(newstate);
+	}
 	const update = (field: keyof IPerson) => (e: React.ChangeEvent<HTMLInputElement>) => 
-		setState({...state, person: {...state.person, [field]: e.target.value}});
-	const updateGender = (e: React.SyntheticEvent<HTMLElement>, data: S.DropdownProps) => 
-		setState({...state, person: {...state.person, gender: data.value as "Man" | "Woman"}});
-	const TextField = ({label, field}:{label: string, field: keyof IPerson}) => <S.Grid.Column>
+		setPerson(field, e.target.value);
+	const updateGender = (_: React.SyntheticEvent<HTMLElement>, data: S.DropdownProps) => 
+		setPerson("gender", data.value);
+	const updateRole = (_:React.SyntheticEvent<HTMLElement>, data: S.DropdownProps) =>
+		setPerson("role", data.value);
+	const updateFamilyPrimary = () => 
+		setPerson("familyPrimary", !state.person.familyPrimary)
+	
+	const quarter: S.GridColumnProps = {computer: 4, tablet: 4, mobile: 16};
+	const TextField = ({label, field}:{label: string, field: keyof IPerson}) => <S.Grid.Column {...quarter}>
 		<S.Form.Field>
 			<label>{label}</label>
-			<S.Input value={state.person[field]} onchange={update(field)} fluid />
+			<S.Input value={state.person[field]} onChange={update(field)} fluid />
 		</S.Form.Field>
 	</S.Grid.Column>;
-	const genderOptions = ["Man","Woman"].map(key => ({key,value: key,text: key}))
+
+	const genderOptions = ["Man","Woman"].map(key => ({key,value: key,text: key}));
+	const roleOptions = (["Father","Mother","Child","Other"] as IMemberFamilyRole[]).map(key => ({key,value:key, text:key}));
 	return <S.Form>
-		<S.Grid columns={3}>
+		<S.Grid>
 			<TextField label="First Name" field="firstname" />
 			<TextField label="Last Name" field="lastname" />
-			<S.Grid.Column>
+			<S.Grid.Column {...quarter}>
 				<S.Form.Field>
 					<label>Gender</label>
 					<S.Dropdown label="Gender" labeled value={state.person.gender} 
 						onChange={updateGender} options={genderOptions} fluid selection />
+				</S.Form.Field>
+			</S.Grid.Column>
+			<S.Grid.Column {...quarter}>
+				<S.Form.Field>
+					<label>Family Role</label>
+					<S.Dropdown label="role" labeled value={state.person.role} onChange={updateRole} 
+						options={roleOptions} fluid selection/>
+				</S.Form.Field>
+			</S.Grid.Column>
+			<S.Grid.Column {...quarter}>
+				<S.Form.Field>
+					<label>Primary Family Contact?</label>
+					<S.Checkbox toggle checked={state.person.familyPrimary} onChange={updateFamilyPrimary} />
+				</S.Form.Field>
+			</S.Grid.Column>
+			<S.Grid.Column {...quarter}>
+				<S.Form.Field>
+					<label>Date of Birth</label>
+					<S.Input type="date" value={state.person.dob} />
 				</S.Form.Field>
 			</S.Grid.Column>
 		</S.Grid>
@@ -56,7 +87,7 @@ export interface IPersonListProps {
 }
 
 export function PersonList(props: IPersonListProps) {
-	return <React.Fragment>
+	return <>
 		<S.Header as="h2">People</S.Header>
 		<S.Table singleLine>
 			<S.Table.Header>
@@ -78,7 +109,7 @@ export function PersonList(props: IPersonListProps) {
 				</S.Table.Row>)}
 			</S.Table.Body>
 		</S.Table>
-	</React.Fragment>;
+	</>;
 }
 
 export function PhoneCell({phone}:{phone: IPhone | undefined}) {
@@ -99,14 +130,33 @@ export function EmailCell({email}:{email: IEmail | undefined}) {
 	</S.TableCell>
 }
 
+export interface IEmailListProps{
+	emails: IEmail[];
+	onAddEmail: (email: IEmail) => void;
+	onEditEmail: (email: IEmail) => void;
+	onDeleteEmail: (email: IEmail) => void;
+}
+
+export function EmailList(props: IEmailListProps){
+	return <div></div>;
+}
+
+export interface IAddEmailProps{
+	onSubmit: (email: IEmail) => void;
+}
+
+export function AddEmail(props: IAddEmailProps){
+	return <div></div>;
+}
+
 export interface IAddPersonFormProps {
 	onSubmit: (name: string) => void;
 }
 
 export function AddPersonForm(props: IAddPersonFormProps){
 	const [name, setName] = React.useState("");
-	return <React.Fragment>
+	return <>
 		<S.Input value={name} onChange={e => setName(e.target.value)} placeholder="Create New Person" />
 		<S.Button onClick={() => {props.onSubmit(name);setName("");}}>Create New Person</S.Button>
-	</React.Fragment>;
+	</>;
 }

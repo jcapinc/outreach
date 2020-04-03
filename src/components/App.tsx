@@ -13,7 +13,7 @@ import { PersonForm } from './People';
 export function App(){
 	const loggedIn = useSelector((state:AppState) => state.login.jwt !== undefined);
 	return <Router>
-		{ loggedIn ? <React.Fragment>
+		{ loggedIn ? <>
 			<Navigation />
 			<Switch>
 				<Route exact path="/" component={Home} />
@@ -21,7 +21,7 @@ export function App(){
 				<Route exact path="/family/:id" component={FamilyRoute} />
 				<Route component={_404} />
 			</Switch>
-		</React.Fragment> : 
+		</> : 
 		<Login /> }
 	</Router>;
 }
@@ -41,22 +41,22 @@ function FamilyMemberRoute(){
 		This family member does not appear to exist
 		<Link to={"/family/"+familyid}>Return to Family</Link>
 	</S.Message>
-	return <React.Fragment>
+	return <>
 		<FamilyBreadCrumb familyid={familyid || ""} familysurname={surname}>
 			<MemberBreadCrumb familyid={familyid} memberid={memberid} 
 				membername={`${member.firstname} ${member.lastname}`}/>
 		</FamilyBreadCrumb>
 		<PersonForm familyID={familyid || ""} person={member} />
-	</React.Fragment>
+	</>
 }
 
 export function FamilyRoute(){
 	let {id} = useParams();
 	const surname = useSelector((state: AppState) => state.currentState.families.find(rec => rec.guid === id)?.surname || "");
-	return <React.Fragment>
+	return <>
 			<FamilyBreadCrumb familyid={id} familysurname={surname} />
 		<FamilyForm id={id || ""} />
-	</React.Fragment>;
+	</>;
 }
 
 export function MemberRoute(){
@@ -67,11 +67,11 @@ export function MemberRoute(){
 		const member = family.members.find(member => member.guid === memberid);
 		return [family.surname,`${member?.firstname} ${member?.lastname}`];
 	});
-	return <React.Fragment>
+	return <>
 		<FamilyBreadCrumb familyid={id} familysurname={surname}>
 			<MemberBreadCrumb familyid={id} membername={membername} memberid={memberid} />
 		</FamilyBreadCrumb>
-	</React.Fragment>;
+	</>;
 }
 
 export interface IFamilyBreadCrumbProps{
@@ -100,8 +100,8 @@ export interface IMemberBreadCrumbProps{
 
 export function MemberBreadCrumb({familyid, membername, memberid}: IMemberBreadCrumbProps){
 	const link = `/family/${familyid}/member/${memberid || ""}`;
-	return <React.Fragment>
+	return <>
 		<S.Breadcrumb.Divider />
 		<S.Breadcrumb.Section><Link to={link}>{membername}</Link></S.Breadcrumb.Section>
-	</React.Fragment>;
+	</>;
 }

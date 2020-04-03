@@ -47,32 +47,35 @@ export interface IFamilyListProps{
 }
 
 export function FamilyList({families}: IFamilyListProps){
-	return <S.Table>
-		<S.Table.Header>
-			<S.Table.Row>
-				<S.Table.HeaderCell>Surname</S.Table.HeaderCell>
-				<S.Table.HeaderCell>Primary Contact</S.Table.HeaderCell>
-				<S.Table.HeaderCell>Primary Contact Phone</S.Table.HeaderCell>
-				<S.Table.HeaderCell>Primary Contact Email</S.Table.HeaderCell>
-				<S.Table.HeaderCell>Member Count</S.Table.HeaderCell>
-			</S.Table.Row>
-		</S.Table.Header>
-		<S.Table.Body>
-			{families.map(family => {
-				const primary = GetPrimaryMember(family.members);
-				const primaryEmail = GetPrimaryContact(primary?.emails);
-				const primaryPhone = GetPrimaryContact(primary?.phones);
-				console.log("primaries", primary, primaryEmail, primaryPhone)
-				return <S.Table.Row key={family.guid}>
-					<S.Table.Cell><Link to={"/family/"+family.guid}>{family.surname}</Link></S.Table.Cell>
-					<S.Table.Cell>{primary ? `${primary.firstname} ${primary.lastname}` : <i>No Primary Contact</i>}</S.Table.Cell>
-					<S.Table.Cell>{primaryPhone ? <a href={"tel:"+primaryPhone.number}>{primaryPhone.number}</a> : <i>No Primary Phone</i>}</S.Table.Cell>
-					<S.Table.Cell>{primaryEmail ? <a href={"email:"+primaryEmail.address}>${primaryEmail.address}</a> : <i>No Primary Email</i>}</S.Table.Cell>
-					<S.Table.Cell>{family.members.length}</S.Table.Cell>
-			</S.Table.Row>;
-			})}
-		</S.Table.Body>
-	</S.Table>;
+	return <>
+		<S.Responsive>
+			<S.Table>
+				<S.Table.Header>
+					<S.Table.Row>
+						<S.Table.HeaderCell>Surname</S.Table.HeaderCell>
+						<S.Table.HeaderCell>Primary Contact</S.Table.HeaderCell>
+						<S.Table.HeaderCell>Primary Contact Phone</S.Table.HeaderCell>
+						<S.Table.HeaderCell>Primary Contact Email</S.Table.HeaderCell>
+						<S.Table.HeaderCell>Member Count</S.Table.HeaderCell>
+					</S.Table.Row>
+				</S.Table.Header>
+				<S.Table.Body>
+					{families.map(family => {
+						const primary = GetPrimaryMember(family.members);
+						const primaryEmail = GetPrimaryContact(primary?.emails);
+						const primaryPhone = GetPrimaryContact(primary?.phones);
+						return <S.Table.Row key={family.guid}>
+							<S.Table.Cell><Link to={"/family/"+family.guid}>{family.surname}</Link></S.Table.Cell>
+							<S.Table.Cell>{primary ? `${primary.firstname} ${primary.lastname}` : <i>No Primary Contact</i>}</S.Table.Cell>
+							<S.Table.Cell>{primaryPhone ? <a href={"tel:"+primaryPhone.number}>{primaryPhone.number}</a> : <i>No Primary Phone</i>}</S.Table.Cell>
+							<S.Table.Cell>{primaryEmail ? <a href={"email:"+primaryEmail.address}>${primaryEmail.address}</a> : <i>No Primary Email</i>}</S.Table.Cell>
+							<S.Table.Cell>{family.members.length}</S.Table.Cell>
+					</S.Table.Row>;
+					})}
+				</S.Table.Body>
+			</S.Table>
+		</S.Responsive>
+	</>;
 }
 
 export function FamilyForm({id}:{id: string}){
@@ -121,23 +124,23 @@ export function FamilyFormMarkup(props: IFamilyFormMarkupProps){
 		newArray[keyof] = person;
 		setState({...state, family: Object.assign({},state.family, {members: newArray} as Partial<IFamily>)});
 	};
-	return <React.Fragment>
+	return <>
 		<div style={{float:"right"}}>
 		{state.confirmDelete ? 
 			<Button onClick={() => props.onDelete(state.family)} color="red" disabled={!state.allowDelete}>Are You Sure You Want To Delete?</Button> : 
 			<Button onClick={deleteClick}>Delete Family</Button>}
 		</div>
-		{state.editSurname ? <React.Fragment>
+		{state.editSurname ? <>
 			<S.Input label="Surname" value={state.family.surname} onChange={updateRecord("surname")} /> 
 			<Button primary onClick={() => {setState({...state,editSurname: false});props.onSave(state.family); }}>Save Surname</Button>
-		</React.Fragment>: <S.Header as='h1'>
+		</>: <S.Header as='h1'>
 			{state.family.surname} Family &nbsp;
 			<S.Icon name="edit" style={{cursor:"pointer",fontSize:"0.5em",lineHeight:"1em"}} onClick={() => setState({...state,editSurname: true})} />
 		</S.Header>}
-		{primaryMember === undefined ? "" : <React.Fragment>
+		{primaryMember === undefined ? "" : <>
 			<S.Header as="h2">Primary Contact</S.Header>
 			<PersonFormMarkup person={primaryMember} onChange={primaryMemberOnChange} />
-		</React.Fragment>}
+		</>}
 		{state.family.members.length === 0 ? <S.Message>
 			<S.Message.Header>There Are No Members</S.Message.Header>
 			Add a member to this family
@@ -145,7 +148,7 @@ export function FamilyFormMarkup(props: IFamilyFormMarkupProps){
 		<AddPersonForm onSubmit={firstname => setState({...state, family:{...state.family, members:[...state.family.members, 
 			emptyPersonRecord(firstname, state.family.surname, props.creator, state.family.members.length === 0)
 		]}})}/>
-		<hr />A
+		<hr />
 		<Button primary onClick={() => props.onSave(state.family)}>Save</Button>
-	</React.Fragment>;
+	</>;
 }
