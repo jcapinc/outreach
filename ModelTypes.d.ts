@@ -27,7 +27,7 @@ export interface IPerson extends IDRecord, TouchRecord{
 	activity: IActivity[];
 }
 
-export interface IContact {
+export interface IContact extends IDRecord{
 	type: "Home" | "Office" | "Cell";
 	primary: boolean;
 }

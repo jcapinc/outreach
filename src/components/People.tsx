@@ -4,6 +4,7 @@ import * as S from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
 import { GetPrimaryContact, UpdateFamilyPerson } from '../store';
 import { useDispatch } from 'react-redux';
+import uniqid from "uniqid";
 
 export interface IPersonFormProps{
 	person:IPerson;
@@ -35,6 +36,14 @@ export function PersonFormMarkup(props: IPersonFormMarkupProps) {
 		setPerson("role", data.value);
 	const updateFamilyPrimary = () => 
 		setPerson("familyPrimary", !state.person.familyPrimary)
+
+	const editEmail = (email: IEmail) => {
+		const id = state.person.emails.findIndex(compareEmail => compareEmail.guid === email.guid);
+		if(id === -1) return setPerson("emails", [...state.person.emails,email]);
+		const newEmails = Array.from(state.person.emails);
+		newEmails[id] = email;
+		setPerson("emails", newEmails);
+	}
 	
 	const quarter: S.GridColumnProps = {computer: 4, tablet: 4, mobile: 16};
 	const TextField = ({label, field}:{label: string, field: keyof IPerson}) => <S.Grid.Column {...quarter}>
@@ -76,8 +85,13 @@ export function PersonFormMarkup(props: IPersonFormMarkupProps) {
 					<S.Input type="date" value={state.person.dob} />
 				</S.Form.Field>
 			</S.Grid.Column>
+			<S.Grid.Column {...quarter}>
+				<EmailList emails={state.person.emails} onEditEmail={editEmail} 
+					onDeleteEmail={(index) => setPerson("emails", state.person.emails.filter((_,i) => index !== i))}
+					onAddEmail={email => setPerson("emails",[...state.person.emails, email])} />
+			</S.Grid.Column>
 		</S.Grid>
-		<S.Grid Columns={4}></S.Grid>
+		<S.Button primary onClick={() => props.onChange(state.person)}>Save Person</S.Button>
 	</S.Form>;
 }
 
@@ -133,20 +147,38 @@ export function EmailCell({email}:{email: IEmail | undefined}) {
 export interface IEmailListProps{
 	emails: IEmail[];
 	onAddEmail: (email: IEmail) => void;
-	onEditEmail: (email: IEmail) => void;
-	onDeleteEmail: (email: IEmail) => void;
+	onEditEmail: (email: IEmail, index: number) => void;
+	onDeleteEmail: (index: number) => void;
 }
 
 export function EmailList(props: IEmailListProps){
-	return <div></div>;
+	const inputChange = (email: IEmail, index: number) => (e: React.ChangeEvent<HTMLInputElement>) => 
+		props.onEditEmail({...email, address: e.target.value}, index)
+	return <>
+		<S.FormField>
+			<label>Email Addresses</label>
+			<AddEmail onSubmit={props.onAddEmail} />
+		</S.FormField>
+		{props.emails.map((email, index) => <S.FormField key={index}>
+			<S.Input value={email.address} onChange={inputChange(email, index)} />
+			<S.Button color="red" onClick={() => props.onDeleteEmail(index)}>Delete</S.Button>
+		</S.FormField>)}
+	</>;
 }
 
 export interface IAddEmailProps{
 	onSubmit: (email: IEmail) => void;
 }
 
+function makeNewEmail(address: string, options: Partial<IEmail> = {}){
+	return Object.assign({guid: uniqid(),address: address,primary: false,type: "Home"},options) as IEmail;
+}
+
 export function AddEmail(props: IAddEmailProps){
-	return <div></div>;
+	const [email, setEmail] = React.useState("");
+	return <S.Input value={email} onChange={e => setEmail(e.target.value)} 
+		labelPosition="right" placeholder="Add New Email Address" 
+		label={<S.Button onClick={() => { props.onSubmit(makeNewEmail(email)); setEmail("");}}>Submit</S.Button>} />;
 }
 
 export interface IAddPersonFormProps {
