@@ -194,7 +194,7 @@ export function AddEmail(props: IAddEmailProps){
 	const [email, setEmail] = React.useState("");
 	const makeNewEmail = (address: string) => ({guid: uniqid(),address: address,primary: false,type: "Home"}) as IEmail;
 	return <S.Input value={email} onChange={e => setEmail(e.target.value)} 
-		labelPosition="right" placeholder="Add New Phone Number" 
+		labelPosition="right" placeholder="Add New Email Address" 
 		label={<S.Button onClick={() => { props.onSubmit(makeNewEmail(email)); setEmail("");}}>Add</S.Button>} />;
 }
 
@@ -212,16 +212,16 @@ export function PhoneList(props: IPhoneListProps){
 		phone.type = e.value as IContactType;
 		props.onEditPhone(phone,index);
 	};
-	const EmailTypeOptions: S.DropdownItemProps[] = ["Home","Office","Cell"].map((name, index) => ({key:index,value:name,text:name}));
+	const PhoneTypeOptions: S.DropdownItemProps[] = ["Home","Office","Cell"].map((name, index) => ({key:index,value:name,text:name}));
 	return <>
 		<S.FormField>
-			<label>Email Addresses</label>
+			<label>Phone Numbers</label>
 			<AddPhone onSubmit={props.onAddPhone} />
 		</S.FormField>
 		{props.phones.map((phone, index) => <S.FormField key={index}>
 			<S.Input value={phone.number} onChange={numberChange(phone, index)} labelPosition="right"
 				label={<>
-					<S.Dropdown selection compact value={phone.type} onChange={typeChange(phone, index)} options={EmailTypeOptions} />
+					<S.Dropdown selection compact value={phone.type} onChange={typeChange(phone, index)} options={PhoneTypeOptions} />
 					<S.Button compact color="red" onClick={() => props.onDeletePhone(index)} icon="trash" title="Delete" />
 				</>} />
 		</S.FormField>)}
@@ -232,7 +232,7 @@ export function AddPhone({onSubmit}: {onSubmit: (phone:IPhone) => void}){
 	const [email, setEmail] = React.useState("");
 	const makeNewPhone = (number: string): IPhone => ({guid: uniqid(),number ,primary: false,type: "Home"});
 	return <S.Input value={email} onChange={e => setEmail(e.target.value)} 
-		labelPosition="right" placeholder="Add New Email Address" 
+		labelPosition="right" placeholder="Add New Phone Number" 
 		label={<S.Button onClick={() => { onSubmit(makeNewPhone(email)); setEmail("");}}>Add</S.Button>} />;
 }
 

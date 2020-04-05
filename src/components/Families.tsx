@@ -68,7 +68,7 @@ export function FamilyList({families}: IFamilyListProps){
 							<S.Table.Cell><Link to={"/family/"+family.guid}>{family.surname}</Link></S.Table.Cell>
 							<S.Table.Cell>{primary ? `${primary.firstname} ${primary.lastname}` : <i>No Primary Contact</i>}</S.Table.Cell>
 							<S.Table.Cell>{primaryPhone ? <a href={"tel:"+primaryPhone.number}>{primaryPhone.number}</a> : <i>No Primary Phone</i>}</S.Table.Cell>
-							<S.Table.Cell>{primaryEmail ? <a href={"email:"+primaryEmail.address}>${primaryEmail.address}</a> : <i>No Primary Email</i>}</S.Table.Cell>
+							<S.Table.Cell>{primaryEmail ? <a href={"email:"+primaryEmail.address}>{primaryEmail.address}</a> : <i>No Primary Email</i>}</S.Table.Cell>
 							<S.Table.Cell>{family.members.length}</S.Table.Cell>
 					</S.Table.Row>;
 					})}
