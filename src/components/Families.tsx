@@ -6,7 +6,7 @@ import * as S from 'semantic-ui-react';
 import { Button, Input } from 'semantic-ui-react';
 import uniqid from 'uniqid';
 import { IFamily, IPerson, IUserRecord } from '../../ModelTypes';
-import { AppState, DeleteFamily, SaveFamily, GetPrimaryMember, GetPrimaryContact } from '../store';
+import { AppState, DeleteFamily, SaveFamily, GetPrimaryMember, GetPrimaryContact, DeleteFamilyPerson } from '../store';
 import { AddPersonForm, PersonList, PersonFormMarkup } from './People';	
 import dayjs from 'dayjs';
 
@@ -67,8 +67,8 @@ export function FamilyList({families}: IFamilyListProps){
 						return <S.Table.Row key={family.guid}>
 							<S.Table.Cell><Link to={"/family/"+family.guid}>{family.surname}</Link></S.Table.Cell>
 							<S.Table.Cell>{primary ? `${primary.firstname} ${primary.lastname}` : <i>No Primary Contact</i>}</S.Table.Cell>
-							<S.Table.Cell>{primaryPhone ? <a href={"tel:"+primaryPhone.number}>{primaryPhone.number}</a> : <i>No Primary Phone</i>}</S.Table.Cell>
-							<S.Table.Cell>{primaryEmail ? <a href={"email:"+primaryEmail.address}>{primaryEmail.address}</a> : <i>No Primary Email</i>}</S.Table.Cell>
+							<S.Table.Cell>{primaryPhone ? <a href={"tel:" + primaryPhone.number}>{primaryPhone.number}</a> : <i>No Primary Phone</i>}</S.Table.Cell>
+							<S.Table.Cell>{primaryEmail ? <a href={"mailto:" + primaryEmail.address}>{primaryEmail.address}</a> : <i>No Primary Email</i>}</S.Table.Cell>
 							<S.Table.Cell>{family.members.length}</S.Table.Cell>
 					</S.Table.Row>;
 					})}
@@ -91,6 +91,7 @@ export function FamilyForm({id}:{id: string}){
 		Could not find this family
 	</S.Message>;
 	return <FamilyFormMarkup family={family} creator={creator} 
+		onDeleteMember={(familyID: string, member: IPerson) => dispatch(DeleteFamilyPerson(familyID, member))}
 		onSave={(family) => dispatch(SaveFamily(family))}
 		onDelete={(family) => { dispatch(DeleteFamily(family)); setState({...state, goHome: true}) }}/>;
 }
@@ -100,6 +101,7 @@ export interface IFamilyFormMarkupProps {
 	creator: string;
 	onSave: (family: IFamily) => void;
 	onDelete:(family: IFamily) => void;
+	onDeleteMember: (familyID: string, member: IPerson) => void;
 }
 
 export function FamilyFormMarkup(props: IFamilyFormMarkupProps){
@@ -134,11 +136,6 @@ export function FamilyFormMarkup(props: IFamilyFormMarkupProps){
 		props.onSave(newstate.family);
 	}
 	return <>
-		<div style={{float:"right"}}>
-		{state.confirmDelete ? 
-			<Button onClick={() => props.onDelete(state.family)} color="red" disabled={!state.allowDelete}>Are You Sure You Want To Delete?</Button> : 
-			<Button onClick={deleteClick}>Delete Family</Button>}
-		</div>
 		{state.editSurname ? <>
 			<S.Input label="Surname" value={state.family.surname} onChange={updateRecord("surname")} /> 
 			<Button primary onClick={() => {setState({...state,editSurname: false});props.onSave(state.family); }}>Save Surname</Button>
@@ -148,7 +145,8 @@ export function FamilyFormMarkup(props: IFamilyFormMarkupProps){
 		</S.Header>}
 		{primaryMember === undefined ? "" : <>
 			<S.Header as="h2">Primary Contact</S.Header>
-			<PersonFormMarkup person={primaryMember} onChange={primaryMemberOnChange} />
+			<PersonFormMarkup person={primaryMember} onChange={primaryMemberOnChange} 
+				onDelete={(person) => props.onDeleteMember(state.family.guid, person)} />
 		</>}
 		{state.family.members.length === 0 ? <S.Message>
 			<S.Message.Header>There Are No Members</S.Message.Header>
@@ -156,6 +154,12 @@ export function FamilyFormMarkup(props: IFamilyFormMarkupProps){
 		</S.Message> : <PersonList people={state.family.members} family={state.family.guid} />}
 		<AddPersonForm onSubmit={addPerson}/>
 		<hr />
-		<Button primary onClick={() => props.onSave(state.family)}>Save</Button>
+		<div style={{display:"flex", justifyContent:"space-between"}}>
+			<Button primary onClick={() => props.onSave(state.family)}>Save</Button>
+			{state.confirmDelete ? 
+				<Button onClick={() => props.onDelete(state.family)} color="red" disabled={!state.allowDelete}>Are You Sure You Want To Delete?</Button> : 
+				<Button secondary onClick={deleteClick}>Delete Family</Button>}
+		</div>
+		<hr />
 	</>;
 }

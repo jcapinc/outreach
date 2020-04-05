@@ -97,7 +97,7 @@ export function CreateFamily(surname: string, id: string = uniqid()): MyThunk {
 }
 
 export function SaveFamily(family: MT.IFamily): MyThunk {
-	return async function(dispatch, getState){
+	return async function(dispatch){
 		dispatch({type: "UPDATE_FAMILY", payload: family});
 		return dispatch(SendState());
 	}
@@ -138,5 +138,20 @@ export function UpdateFamilyPerson(familyID: string, person:MT.IPerson): MyThunk
 			return member;
 		});
 		return dispatch(SaveFamily(Object.assign({}, family)));
+	}
+}
+
+export function DeleteFamilyPerson(familyID: string, person: Pick<MT.IPerson, "guid">): MyThunk{
+	return async function(dispatch, getState){
+		const family = getState().currentState.families.find(family => family.guid === familyID);
+		if(family === undefined){
+			console.log("Could not find family to delete family member", familyID, person);
+			return false;
+		}
+		const memberlist = Array.from(family.members);
+		const memberIndex = memberlist.findIndex(member => member.guid === person.guid);
+		memberlist.splice(memberIndex,1);
+		family.members = memberlist;
+		return dispatch(SaveFamily(family));
 	}
 }

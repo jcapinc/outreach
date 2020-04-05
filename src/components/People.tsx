@@ -2,7 +2,7 @@ import React from 'react';
 import { IPerson, IPhone, IEmail, IMemberFamilyRole, IContactType } from '../../ModelTypes';
 import * as S from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
-import { GetPrimaryContact, UpdateFamilyPerson } from '../store';
+import { GetPrimaryContact, UpdateFamilyPerson, DeleteFamilyPerson } from '../store';
 import { useDispatch } from 'react-redux';
 import uniqid from "uniqid";
 import dayjs from "dayjs";
@@ -14,17 +14,22 @@ export interface IPersonFormProps{
 
 export function PersonForm(props: IPersonFormProps){
 	const dispatch = useDispatch();
-	return <PersonFormMarkup person={props.person} 
+	return <PersonFormMarkup person={props.person} onDelete={person => dispatch(DeleteFamilyPerson(props.familyID, person))}
 		onChange={person => dispatch(UpdateFamilyPerson(props.familyID,person))}/>
 }
 
 export interface IPersonFormMarkupProps{
 	person: IPerson;
 	onChange: (person: IPerson) => void;
+	onDelete: (person: IPerson) => void;
 }
 
 export function PersonFormMarkup(props: IPersonFormMarkupProps) {
-	const [state, setState] = React.useState({person: props.person})
+	const [state, setState] = React.useState({
+		person: props.person,
+		confirmDelete: false,
+		deleted: false
+	});
 	const setPerson = (field: keyof IPerson,value: any) => {
 		const newstate = {...state, person: {...state.person, [field]: value}};
 		setState(newstate);
@@ -46,7 +51,7 @@ export function PersonFormMarkup(props: IPersonFormMarkupProps) {
 		setPerson("emails", newEmails);
 	}
 
-	const editPhone = (phone:IPhone, index: number) =>{
+	const editPhone = (phone:IPhone, index: number) => {
 		const newPhones = Array.from(state.person.phones);
 		newPhones[index] = phone;
 		setPerson("phones",newPhones);
@@ -89,7 +94,7 @@ export function PersonFormMarkup(props: IPersonFormMarkupProps) {
 			<S.Grid.Column {...quarter}>
 				<S.Form.Field>
 					<label>Date of Birth</label>
-					<S.Input type="date" value={dayjs(state.person.dob).format("YYYY-MM-DD")} />
+					<S.Input type="date" value={dayjs(state.person.dob).format("YYYY-MM-DD")} onChange={update("dob")} />
 				</S.Form.Field>
 			</S.Grid.Column>
 			<S.Grid.Column {...quarter}>
@@ -103,7 +108,13 @@ export function PersonFormMarkup(props: IPersonFormMarkupProps) {
 					onAddPhone={phone => setPerson("phones", [...state.person.phones, phone])} />
 			</S.Grid.Column>
 		</S.Grid>
-		<S.Button primary onClick={() => props.onChange(state.person)}>Save Person</S.Button>
+		<hr />
+		<div style={{display:"flex", flexFlow:"row nowrap", justifyContent:"space-between"}}>
+			<S.Button primary onClick={() => props.onChange(state.person)}>Save Person</S.Button>
+			{state.confirmDelete ? <S.Button color="red">Are You Sure? Delete?</S.Button> : 
+				<S.Button secondary onClick={() => setState({...state, confirmDelete: true})}>Delete Person</S.Button>}
+		</div>
+		<hr />
 	</S.Form>;
 }
 
