@@ -13,7 +13,7 @@ import dayjs from 'dayjs';
 const emptyPersonRecord = (firstname: string, lastname: string, creatorID: string, primary = false): IPerson => ({
 	activity: [],
 	addresses: [],
-	created: (new Date()).toString(),
+	created: dayjs().subtract(20,"year").format("YYYY-MM-DD"),
 	creator: creatorID,
 	dob: dayjs().subtract(18,"year").toDate().toString(),
 	emails: [],
@@ -23,7 +23,7 @@ const emptyPersonRecord = (firstname: string, lastname: string, creatorID: strin
 	guid: uniqid(),
 	phones:[],
 	role: "Other",
-	updated: (new Date()).toString(),
+	updated: dayjs().toString(),
 	updatedBy: creatorID
 });
 
@@ -116,7 +116,9 @@ export function FamilyFormMarkup(props: IFamilyFormMarkupProps){
 	};
 	const updateRecord = (key: keyof IFamily) => (e: React.ChangeEvent<HTMLInputElement>) => 
 		setState({...state,family: { ...state.family, [key]: e.target.value}});
-	const primaryMember = GetPrimaryMember(state.family.members);
+
+		const primaryMember = GetPrimaryMember(state.family.members);
+
 	const primaryMemberOnChange = (person: IPerson) => {
 		const newArray = Array.from(state.family.members);
 		const keyof = newArray.findIndex(member => person.guid === member.guid);
@@ -124,6 +126,13 @@ export function FamilyFormMarkup(props: IFamilyFormMarkupProps){
 		newArray[keyof] = person;
 		setState({...state, family: Object.assign({},state.family, {members: newArray} as Partial<IFamily>)});
 	};
+
+	const addPerson = (firstname: string) => {
+		const newperson = emptyPersonRecord(firstname, state.family.surname, props.creator, state.family.members.length === 0)
+		const newstate = {...state, family:{...state.family, members:[...state.family.members, newperson]}};
+		setState(newstate);
+		props.onSave(newstate.family);
+	}
 	return <>
 		<div style={{float:"right"}}>
 		{state.confirmDelete ? 
@@ -145,9 +154,7 @@ export function FamilyFormMarkup(props: IFamilyFormMarkupProps){
 			<S.Message.Header>There Are No Members</S.Message.Header>
 			Add a member to this family
 		</S.Message> : <PersonList people={state.family.members} family={state.family.guid} />}
-		<AddPersonForm onSubmit={firstname => setState({...state, family:{...state.family, members:[...state.family.members, 
-			emptyPersonRecord(firstname, state.family.surname, props.creator, state.family.members.length === 0)
-		]}})}/>
+		<AddPersonForm onSubmit={addPerson}/>
 		<hr />
 		<Button primary onClick={() => props.onSave(state.family)}>Save</Button>
 	</>;
