@@ -126,7 +126,9 @@ export function FamilyFormMarkup(props: IFamilyFormMarkupProps){
 		const keyof = newArray.findIndex(member => person.guid === member.guid);
 		if(keyof === -1) throw new Error("Could not find member to change by id");
 		newArray[keyof] = person;
-		setState({...state, family: Object.assign({},state.family, {members: newArray} as Partial<IFamily>)});
+		const newstate = {...state, family: Object.assign({},state.family, {members: newArray} as Partial<IFamily>)};
+		setState(newstate);
+		props.onSave(newstate.family);
 	};
 
 	const addPerson = (firstname: string) => {

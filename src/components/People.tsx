@@ -28,7 +28,9 @@ export function PersonFormMarkup(props: IPersonFormMarkupProps) {
 	const [state, setState] = React.useState({
 		person: props.person,
 		confirmDelete: false,
-		deleted: false
+		deleted: false,
+		email: "",
+		number: ""
 	});
 	const setPerson = (field: keyof IPerson,value: any) => {
 		const newstate = {...state, person: {...state.person, [field]: value}};
@@ -103,7 +105,7 @@ export function PersonFormMarkup(props: IPersonFormMarkupProps) {
 					onAddEmail={email => setPerson("emails",[...state.person.emails, email])} />
 			</S.Grid.Column>
 			<S.Grid.Column {...quarter}>
-				<PhoneList phones={state.person.phones} onEditPhone={editPhone}
+				<PhoneList phones={state.person.phones} onEditPhone={editPhone} onAddPhoneChange={number => setState({...state, number})}
 					onDeletePhone={index => setPerson("phones", state.person.phones.filter((_,i) => index !== i))}
 					onAddPhone={phone => setPerson("phones", [...state.person.phones, phone])} />
 			</S.Grid.Column>
@@ -172,6 +174,7 @@ export interface IEmailListProps{
 	onAddEmail: (email: IEmail) => void;
 	onEditEmail: (email: IEmail, index: number) => void;
 	onDeleteEmail: (index: number) => void;
+	onAddEmailChange?: (address: string) => void;
 }
 
 export function EmailList(props: IEmailListProps){
@@ -185,7 +188,7 @@ export function EmailList(props: IEmailListProps){
 	return <>
 		<S.FormField>
 			<label>Email Addresses</label>
-			<AddEmail onSubmit={props.onAddEmail} />
+			<AddEmail onSubmit={props.onAddEmail} onChange={props.onAddEmailChange} />
 		</S.FormField>
 		{props.emails.map((email, index) => <S.FormField key={index}>
 			<S.Input value={email.address} onChange={addressChange(email, index)} labelPosition="right"
@@ -199,14 +202,16 @@ export function EmailList(props: IEmailListProps){
 
 export interface IAddEmailProps{
 	onSubmit: (email: IEmail) => void;
+	onChange?: (email: string) => void;
 }
 
 export function AddEmail(props: IAddEmailProps){
 	const [email, setEmail] = React.useState("");
+	const onChange = props.onChange ? props.onChange : () => null;
 	const makeNewEmail = (address: string) => ({guid: uniqid(),address: address,primary: false,type: "Home"}) as IEmail;
-	return <S.Input value={email} onChange={e => setEmail(e.target.value)} 
-		labelPosition="right" placeholder="Add New Email Address" 
-		label={<S.Button onClick={() => { props.onSubmit(makeNewEmail(email)); setEmail("");}}>Add</S.Button>} />;
+	return <S.Input value={email} labelPosition="right" placeholder="Add New Email Address" 
+		onChange={e => {setEmail(e.target.value); onChange(e.target.value)}} 
+		label={<S.Button onClick={() => { props.onSubmit(makeNewEmail(email)); setEmail(""); onChange("");}}>Add</S.Button>} />;
 }
 
 export interface IPhoneListProps{
@@ -214,6 +219,7 @@ export interface IPhoneListProps{
 	onEditPhone: (phone: IPhone, index: number) => void;
 	onAddPhone: (phone: IPhone) => void;
 	onDeletePhone: (index: number) => void;
+	onAddPhoneChange?: (number: string) => void;
 }
 
 export function PhoneList(props: IPhoneListProps){
@@ -227,7 +233,7 @@ export function PhoneList(props: IPhoneListProps){
 	return <>
 		<S.FormField>
 			<label>Phone Numbers</label>
-			<AddPhone onSubmit={props.onAddPhone} />
+			<AddPhone onSubmit={props.onAddPhone} onChange={props.onAddPhoneChange} />
 		</S.FormField>
 		{props.phones.map((phone, index) => <S.FormField key={index}>
 			<S.Input value={phone.number} onChange={numberChange(phone, index)} labelPosition="right"
@@ -239,12 +245,17 @@ export function PhoneList(props: IPhoneListProps){
 	</>;
 }
 
-export function AddPhone({onSubmit}: {onSubmit: (phone:IPhone) => void}){
+export interface IAddPhoneProps{
+	onSubmit: (phone:IPhone) => void;
+	onChange?: (number: string) => void;
+}
+
+export function AddPhone({onSubmit, onChange = () => null}: IAddPhoneProps){
 	const [email, setEmail] = React.useState("");
 	const makeNewPhone = (number: string): IPhone => ({guid: uniqid(),number ,primary: false,type: "Home"});
-	return <S.Input value={email} onChange={e => setEmail(e.target.value)} 
-		labelPosition="right" placeholder="Add New Phone Number" 
-		label={<S.Button onClick={() => { onSubmit(makeNewPhone(email)); setEmail("");}}>Add</S.Button>} />;
+	return <S.Input value={email} labelPosition="right" placeholder="Add New Phone Number" 
+		onChange={e => {setEmail(e.target.value);onChange(e.target.value);}} 
+		label={<S.Button onClick={() => { onSubmit(makeNewPhone(email)); setEmail(""); onChange("")}}>Add</S.Button>} />;
 }
 
 export interface IAddPersonFormProps {
