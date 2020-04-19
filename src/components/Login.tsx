@@ -1,5 +1,4 @@
 import React, { KeyboardEvent } from 'react';
-import './Login.scss';
 import {useDispatch, useSelector} from 'react-redux';
 import { attemptlogin, AppState } from "../store";
 import * as S from 'semantic-ui-react';

@@ -1,12 +1,13 @@
 import React from 'react';
-import { IPerson, IPhone, IEmail, IMemberFamilyRole, IContactType, IGender, IAddress } from '../../ModelTypes';
+import { IPerson, IPhone, IEmail, IMemberFamilyRole, IGender, IAddress } from '../../ModelTypes';
 import * as S from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
 import { GetPrimaryContact, UpdateFamilyPerson, DeleteFamilyPerson } from '../store';
 import { useDispatch } from 'react-redux';
-import uniqid from "uniqid";
+import { EmailList, EmailCell } from './Emails';
+import { PhoneList, PhoneCell } from './Phones';
+import { AddressList } from './Addresses';
 
-const contactTypes = ["Home","Office","Cell"];
 
 export interface IPersonFormProps{
 	person:IPerson;
@@ -166,120 +167,6 @@ export function PersonList(props: IPersonListProps) {
 	</>;
 }
 
-export function PhoneCell({phone}:{phone: IPhone | undefined}) {
-	if(phone === undefined) return <S.Table.Cell>
-		<i>No Phone Number Saved</i>
-	</S.Table.Cell>;
-	return <S.Table.Cell>
-		<a href={"tel:"+phone.number}>{phone.number}</a>
-	</S.Table.Cell>;
-}
-
-export function EmailCell({email}:{email: IEmail | undefined}) {
-	if(email === undefined) return <S.TableCell>
-		<i>No Email Address Defined</i>
-	</S.TableCell>;
-	return <S.TableCell>
-		<a href={"mailto:"+email.address} target="new">{email.address}</a>
-	</S.TableCell>
-}
-
-export interface IEmailListProps{
-	emails: IEmail[];
-	onAddEmail: (email: IEmail) => void;
-	onEditEmail: (email: IEmail, index: number) => void;
-	onDeleteEmail: (index: number) => void;
-}
-
-export function EmailList(props: IEmailListProps){
-	const addressChange = (email: IEmail, index: number) => (e: React.ChangeEvent<HTMLInputElement>) => 
-		props.onEditEmail({...email, address: e.target.value}, index)
-	const typeChange = (email: IEmail, index: number) => (_: any, e: S.DropdownProps) => {
-		email.type = e.value as IContactType;
-		props.onEditEmail(email,index);
-	};
-	const EmailTypeOptions: S.DropdownItemProps[] = ["Home","Office","Cell"].map((name, index) => ({key:index,value:name,text:name}));
-	return <S.Message>
-		<S.Message.Header>Email Addresses</S.Message.Header>
-		<hr />
-		<S.FormField>
-			<label>Add Email</label>
-			<AddEmail onSubmit={props.onAddEmail} />
-		</S.FormField>
-		{props.emails.map((email, index) => <S.FormField key={index}>
-			<label><S.Dropdown value={email.type} onChange={typeChange(email, index)} options={EmailTypeOptions} /></label>
-			<S.Input value={email.address} onChange={addressChange(email, index)} labelPosition="right"
-				label={<S.Button compact color="red" onClick={() => props.onDeleteEmail(index)} icon="trash"></S.Button>} />
-		</S.FormField>)}
-	</S.Message>;
-}
-
-export interface IAddEmailProps{
-	onSubmit: (email: IEmail) => void;
-}
-
-export function AddEmail(props: IAddEmailProps){
-	const [email, setEmail] = React.useState("");
-	const makeNewEmail = (address: string) => ({guid: uniqid(),address: address,primary: false,type: "Home"}) as IEmail;
-	return <S.Input type="email" value={email} labelPosition="right" placeholder="Add New Email Address" 
-		onChange={e => {setEmail(e.target.value);}} 
-		onBlur={() => { 
-			if(email.length === 0) return; 
-			props.onSubmit(makeNewEmail(email)); 
-			setEmail(""); 
-		}}
-		label={<S.Button title="Add" icon="plus" primary></S.Button>} />;
-}
-
-export interface IPhoneListProps{
-	phones: IPhone[];
-	onEditPhone: (phone: IPhone, index: number) => void;
-	onAddPhone: (phone: IPhone) => void;
-	onDeletePhone: (index: number) => void;
-}
-
-export function PhoneList(props: IPhoneListProps){
-	const numberChange = (phone: IPhone, index: number) => (e: React.ChangeEvent<HTMLInputElement>) => 
-		props.onEditPhone({...phone, number: e.target.value}, index)
-	const typeChange = (phone: IPhone, index: number) => (_: any, e: S.DropdownProps) => {
-		phone.type = e.value as IContactType;
-		props.onEditPhone(phone,index);
-	};
-	const PhoneTypeOptions: S.DropdownItemProps[] = contactTypes.map((name, index) => ({key:index,value:name,text:name}));
-	return <S.Message>
-		<S.Message.Header>Phone Numbers</S.Message.Header>
-		<hr />
-		<S.FormField>
-			<label>Add Phone Number</label>
-			<AddPhone onSubmit={props.onAddPhone} />
-		</S.FormField>
-		{props.phones.map((phone, index) => <S.FormField key={index}>
-			<label><S.Dropdown value={phone.type} onChange={typeChange(phone, index)} options={PhoneTypeOptions} /></label>
-			<S.Input value={phone.number} onChange={numberChange(phone, index)} labelPosition="right"
-				label={<S.Button compact color="red" onClick={() => props.onDeletePhone(index)} icon="trash" title="Delete" />} />
-		</S.FormField>)}
-	</S.Message>;
-}
-
-export interface IAddPhoneProps{
-	onSubmit: (phone:IPhone) => void;
-	onChange?: (number: string) => void;
-}
-
-export function AddPhone({onSubmit, onChange = () => null}: IAddPhoneProps){
-	const [phone, setPhone] = React.useState("");
-	const makeNewPhone = (number: string): IPhone => ({guid: uniqid(),number ,primary: false,type: "Home"});
-	const onBlur = () => {
-		if(phone.length === 0) return;
-		onSubmit(makeNewPhone(phone));
-		setPhone("");
-		onChange("");
-	};
-	return <S.Input value={phone} labelPosition="right" placeholder="Add New Phone Number" 
-		onChange={e => {setPhone(e.target.value);onChange(e.target.value);}} onBlur={onBlur}
-		label={<S.Button primary icon="plus"></S.Button>} />;
-}
-
 export interface IAddPersonFormProps {
 	onSubmit: (name: string) => void;
 }
@@ -292,93 +179,3 @@ export function AddPersonForm(props: IAddPersonFormProps){
 	</>;
 }
 
-export interface IAddressListProps{
-	addresses: IAddress[];
-	onAddAddress: (address: IAddress) => void;
-	onChange: (index: number, key: keyof IAddress, value: any) => void;
-	onDeleteAddress: (index: number) => void;
-}
-
-const blankAddress = (address: Partial<IAddress> = {}) => ({...{
-	apptNo: "",
-	city: "",
-	guid: uniqid(),
-	line1: "",
-	line2: "",
-	primary: false,
-	state: "",
-	type: "Home",
-	zip: ""
-}, ...address});
-
-export function AddressList(props: IAddressListProps){
-	const [newAddress, setNewAddress] = React.useState<IAddress>(blankAddress({primary: props.addresses.length === 0}));
-	const changeNew = (field: keyof IAddress) => (value: string) => 
-		setNewAddress({...newAddress, [field]: value});
-	return <S.Message>
-		<S.Message.Header>Mailing Addresses</S.Message.Header>
-		<hr />
-		{props.addresses.map((address, index) => <div key={index}>
-			<AddressFormMarkup onChange={(field, value) => props.onChange(index,field,value)} address={address} 
-				controls={<S.Button color="red" icon="trash" onClick={() => props.onDeleteAddress(index)}
-				title={`Delete ${address.type.toLowerCase()} address starting with '${address.line1}'`} />} />
-			<hr />
-		</div>)}
-		<AddressFormMarkup onChange={(field, value) => changeNew(field)(value)} address={newAddress} title={<>
-			<S.Message.Header as="h3">Add New Address</S.Message.Header>
-			<hr />
-		</>} controls={<S.Button primary icon="plus" title="Add New Address" onClick={() => {
-			props.onAddAddress(newAddress); 
-			setNewAddress(blankAddress());
-		}}/>}/>
-		
-	</S.Message>
-}
-
-export interface IAddressFormMarkupProps{
-	address: IAddress;
-	onChange: (field: keyof IAddress, value: string) => void;
-	title?: JSX.Element;
-	controls?: JSX.Element
-}
-
-export function AddressFormMarkup(props:IAddressFormMarkupProps){
-	const {address, onChange, title, controls} = props;
-	const change = (field: keyof IAddress) => (value: string) => {onChange(field,value)};
-	return <>
-		{title}
-		<S.Form.Group widths="2">
-			<SimpleTextField label="Address Line 1" onChange={change("line1")} value={address.line1} />
-			<SimpleTextField label="Address Line 2" onChange={change("line2")} value={address.line2} />
-		</S.Form.Group>
-		<S.Form.Group widths="2">
-			{([["city","City"],["state","State"],["zip","Zip Code"]] as [keyof IAddress, string][]).map(([field, label], index) => 
-				<SimpleTextField label={label} onChange={change(field)} value={address[field]} key={index} />)}
-		</S.Form.Group>
-		<S.Form.Group>
-			<S.FormField>
-				<label>Address Type: </label>
-			</S.FormField>
-			{contactTypes.map((contactType, index) => <S.Form.Field key={index}>
-				<S.Checkbox radio checked={address.type === contactType} label={contactType}
-					onChange={() => change("type")(contactType)} />
-			</S.Form.Field>)}
-			<div style={{marginLeft:"auto"}}>{controls}</div>
-		</S.Form.Group>
-	</>;
-}
-
-interface SimpleTextFieldProps{
-	label: string;
-	value: string | undefined;
-	onChange: (value: string) => void;
-	input?: S.InputProps;
-}
-
-function SimpleTextField(props: SimpleTextFieldProps){
-	const {label,value, onChange, input = {fluid: undefined}} = props;
-	return <S.FormField>
-		<label>{label}</label>
-		<S.Input value={value} onChange={e => onChange(e.target.value)} {...input} />
-	</S.FormField>;
-}

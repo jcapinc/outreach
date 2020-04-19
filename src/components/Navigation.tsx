@@ -1,7 +1,6 @@
 import React from "react";
 import {Link} from 'react-router-dom';
 import * as S from 'semantic-ui-react';
-import "./Navigation.scss";
 
 export const Navigation: React.FC<{}> = () => {
 	// const dispatch = useDispatch();

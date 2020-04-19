@@ -9,7 +9,6 @@ import { FamilyForm } from './Families';
 import * as S from 'semantic-ui-react';
 import { PersonForm } from './People';
 
-
 export function App(){
 	const loggedIn = useSelector((state:AppState) => state.login.jwt !== undefined);
 	return <Router>
