@@ -37,9 +37,7 @@ export function PersonFormMarkup(props: IPersonFormMarkupProps) {
 		number: ""
 	});
 	const setPerson = (field: keyof IPerson,value: any) => {
-		console.log("Set Person Before", state, field, value);
 		const newstate = {...state, person: {...state.person, [field]: value}};
-		console.log("Set State After", newstate)
 		setState(newstate);
 	}
 	const update = (field: keyof IPerson) => (e: React.ChangeEvent<HTMLInputElement>) => 
@@ -109,7 +107,6 @@ export function PersonFormMarkup(props: IPersonFormMarkupProps) {
 						onAddAddress={address => setPerson("addresses",[...Array.from(state.person.addresses), address])} 
 						onChange={(key, field, value) => {
 							const newAddresses = Array.from(state.person.addresses);
-							console.log({key,field,value,newAddresses});
 							Object.assign(newAddresses[key], {[field]: value});
 							setPerson("addresses", newAddresses);
 						}} />
