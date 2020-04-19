@@ -15,11 +15,11 @@ const emptyPersonRecord = (firstname: string, lastname: string, creatorID: strin
 	addresses: [],
 	created: dayjs().subtract(20,"year").format("YYYY-MM-DD"),
 	creator: creatorID,
-	dob: dayjs().subtract(18,"year").toDate().toString(),
+	dob: dayjs().subtract(18,"year").format("YYYY-MM-DD"),
 	emails: [],
 	familyPrimary: primary,
 	firstname, lastname,
-	gender: "Man",
+	gender: "Male",
 	guid: uniqid(),
 	phones:[],
 	role: "Other",
@@ -124,10 +124,12 @@ export function FamilyFormMarkup(props: IFamilyFormMarkupProps){
 	const primaryMemberOnChange = (person: IPerson) => {
 		const newArray = Array.from(state.family.members);
 		const keyof = newArray.findIndex(member => person.guid === member.guid);
+		console.log("before", state.family.members[keyof]);
 		if(keyof === -1) throw new Error("Could not find member to change by id");
 		newArray[keyof] = person;
 		const newstate = {...state, family: Object.assign({},state.family, {members: newArray} as Partial<IFamily>)};
 		setState(newstate);
+		console.log("after", newstate.family.members[keyof]);
 		props.onSave(newstate.family);
 	};
 
@@ -137,7 +139,7 @@ export function FamilyFormMarkup(props: IFamilyFormMarkupProps){
 		setState(newstate);
 		props.onSave(newstate.family);
 	}
-	return <>
+	return <S.Container>
 		{state.editSurname ? <>
 			<S.Input label="Surname" value={state.family.surname} onChange={updateRecord("surname")} /> 
 			<Button primary onClick={() => {setState({...state,editSurname: false});props.onSave(state.family); }}>Save Surname</Button>
@@ -156,12 +158,12 @@ export function FamilyFormMarkup(props: IFamilyFormMarkupProps){
 		</S.Message> : <PersonList people={state.family.members} family={state.family.guid} />}
 		<AddPersonForm onSubmit={addPerson}/>
 		<hr />
-		<div style={{display:"flex", justifyContent:"space-between"}}>
+		<div style={{display: "flex", justifyContent: "space-between"}}>
 			<Button primary onClick={() => props.onSave(state.family)}>Save</Button>
 			{state.confirmDelete ? 
 				<Button onClick={() => props.onDelete(state.family)} color="red" disabled={!state.allowDelete}>Are You Sure You Want To Delete?</Button> : 
 				<Button secondary onClick={deleteClick}>Delete Family</Button>}
 		</div>
 		<hr />
-	</>;
+	</S.Container>;
 }

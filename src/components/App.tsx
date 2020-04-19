@@ -82,12 +82,14 @@ export interface IFamilyBreadCrumbProps{
 
 export function FamilyBreadCrumb({children, familyid, familysurname}:IFamilyBreadCrumbProps){
 	return <div>
-		<S.Breadcrumb>
-			<S.Breadcrumb.Section><Link to="/">Home</Link></S.Breadcrumb.Section>
-			<S.Breadcrumb.Divider />
-			<S.Breadcrumb.Section><Link to={"/family/" + familyid}>{familysurname} Family</Link></S.Breadcrumb.Section>
-			{children || ""}
-		</S.Breadcrumb>
+		<S.Container>
+			<S.Breadcrumb>
+				<S.Breadcrumb.Section><Link to="/">Home</Link></S.Breadcrumb.Section>
+				<S.Breadcrumb.Divider />
+				<S.Breadcrumb.Section><Link to={"/family/" + familyid}>{familysurname} Family</Link></S.Breadcrumb.Section>
+				{children || ""}
+			</S.Breadcrumb>
+		</S.Container>
 		<hr />
 	</div>;
 }

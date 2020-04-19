@@ -17,7 +17,7 @@ export interface IFamily extends IDRecord, TouchRecord{
 export interface IPerson extends IDRecord, TouchRecord{
 	firstname: string;
 	lastname: string;
-	gender: "Man" | "Woman";
+	gender: IGender;
 	familyPrimary: boolean;
 	role: IMemberFamilyRole;
 	dob: string;
@@ -72,4 +72,6 @@ export interface IUserRecord {
 	lastname?:string;
 }
 
-export type IMemberFamilyRole = "Mother" | "Father" | "Child" | "Other";
+export type IMemberFamilyRole = "Mother" | "Father" | "Child" | "Grandparent" | "Aunt/Uncle" | "Neice/Nephew/Cousin" | "Other";
+
+export type IGender = "Male" | "Female";

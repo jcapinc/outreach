@@ -29,11 +29,13 @@ export interface IHomeMarkupProps{
 }
 
 export function HomeMarkup(props: IHomeMarkupProps) {
-	return <div style={{textAlign:"center"}}>
+	return <S.Container>
+		<S.Header as="h2">Families</S.Header>
 		{props.families.length === 0 ? <S.Message>
 			<S.Message.Header>There are No Families</S.Message.Header>
 			Create a new family to get started.
 		</S.Message> : <families.FamilyList families={props.families} />}
+		<S.Header as="h3">Add New Family</S.Header>
 		<families.CreateFamilyForm onSubmit={props.onCreateFamily} />
-	</div>;
+	</S.Container>;
 }
