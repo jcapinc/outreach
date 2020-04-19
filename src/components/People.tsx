@@ -318,12 +318,12 @@ export function AddressList(props: IAddressListProps){
 	return <S.Message>
 		<S.Message.Header>Mailing Addresses</S.Message.Header>
 		<hr />
-		{props.addresses.map((address, index) => <>
-			<AddressFormMarkup onChange={(field, value) => props.onChange(index,field,value)} address={address} key={index} 
+		{props.addresses.map((address, index) => <div key={index}>
+			<AddressFormMarkup onChange={(field, value) => props.onChange(index,field,value)} address={address} 
 				controls={<S.Button color="red" icon="trash" onClick={() => props.onDeleteAddress(index)}
 				title={`Delete ${address.type.toLowerCase()} address starting with '${address.line1}'`} />} />
 			<hr />
-		</>)}
+		</div>)}
 		<AddressFormMarkup onChange={(field, value) => changeNew(field)(value)} address={newAddress} title={<>
 			<S.Message.Header as="h3">Add New Address</S.Message.Header>
 			<hr />
