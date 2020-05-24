@@ -7,6 +7,7 @@ import { useDispatch } from 'react-redux';
 import { EmailList, EmailCell } from './Emails';
 import { PhoneList, PhoneCell } from './Phones';
 import { AddressList } from './Addresses';
+import { ActivityList } from './Activity';
 
 
 export interface IPersonFormProps{
@@ -24,6 +25,7 @@ export interface IPersonFormMarkupProps{
 	person: IPerson;
 	onChange: (person: IPerson) => void;
 	onDelete: (person: IPerson) => void;
+	showActivity?: boolean;
 }
 
 export function PersonFormMarkup(props: IPersonFormMarkupProps) {
@@ -126,6 +128,7 @@ export function PersonFormMarkup(props: IPersonFormMarkupProps) {
 				</S.Grid.Column>
 			</S.Grid>
 			<hr />
+			<ActivityList modifyActivity={() => null} activities={[]} onAddActivity={() => null} />
 			<div style={{display:"flex", flexFlow:"row nowrap", justifyContent:"space-between"}}>
 				<S.Button primary onClick={() => props.onChange(state.person)}>Save Person</S.Button>
 				{state.confirmDelete ? <S.Button color="red">Are You Sure? Delete?</S.Button> : 

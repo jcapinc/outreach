@@ -56,9 +56,6 @@ export interface IAddress extends IContact{
 
 export interface IActivity extends TouchRecord{
 	body: string;
-	creater: string;
-	created: string;
-	updated: string;
 }
 
 export interface IUserAppState{
