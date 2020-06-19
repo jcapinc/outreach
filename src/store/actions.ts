@@ -155,3 +155,41 @@ export function DeleteFamilyPerson(familyID: string, person: Pick<MT.IPerson, "g
 		return dispatch(SaveFamily(family));
 	}
 }
+
+function SelectPersonAndSaveFamily(familyID: string, personID: string, cb: (family: MT.IFamily, personKey: number) => MT.IFamily): MyThunk {
+	return async function(dispatch, getState) {
+		const family = getState().currentState.families.find(family => family.guid === familyID);
+		if (family === undefined) {
+			console.log("Error when selecting person, could not find family");
+			return false;
+		}
+		const personKey = family.members.findIndex(person => person.guid === personID);
+		if (personKey === -1) {
+			console.log("Error when selecting person, could not find person on family");
+			return false;
+		}
+		const newFamily = cb(family, personKey);
+		return dispatch(SaveFamily(newFamily));
+	}
+}
+
+export function ModifyActivity(key: number, familyID: string, personID: string, newActivity: MT.IActivity): MyThunk {
+	return SelectPersonAndSaveFamily(familyID, personID, (family, personKey) => {
+		family.members[personKey].activity[key] = newActivity;
+		return family;
+	})
+}
+
+export function AddActivity(familyID: string, personID: string, newActivity: MT.IActivity): MyThunk {
+	return SelectPersonAndSaveFamily(familyID, personID, (family, personKey) => {
+		family.members[personKey].activity.push(newActivity);
+		return family;
+	})
+}
+
+export function DeleteActivity(ActivityID: number, familyID: string, personID: string): MyThunk {
+	return SelectPersonAndSaveFamily(familyID, personID, (family, personKey) => {
+		family.members[personKey].activity = family.members[personKey].activity.filter((member, index) => index !== ActivityID);
+		return family;
+	})
+}

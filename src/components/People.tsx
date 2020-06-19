@@ -2,12 +2,12 @@ import React from 'react';
 import { IPerson, IPhone, IEmail, IMemberFamilyRole, IGender, IAddress } from '../../ModelTypes';
 import * as S from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
-import { GetPrimaryContact, UpdateFamilyPerson, DeleteFamilyPerson } from '../store';
+import * as store from '../store';
 import { useDispatch } from 'react-redux';
 import { EmailList, EmailCell } from './Emails';
 import { PhoneList, PhoneCell } from './Phones';
 import { AddressList } from './Addresses';
-import { ActivityList } from './Activity';
+import { ActivityList, IActivityListProps } from './Activity';
 
 
 export interface IPersonFormProps{
@@ -17,15 +17,23 @@ export interface IPersonFormProps{
 
 export function PersonForm(props: IPersonFormProps){
 	const dispatch = useDispatch();
-	return <PersonFormMarkup person={props.person} onDelete={person => dispatch(DeleteFamilyPerson(props.familyID, person))}
-		onChange={person => dispatch(UpdateFamilyPerson(props.familyID,person))}/>
+	const activity: IActivityListProps = {
+		activities: props.person.activity,
+		modifyActivity: (key, activity) => dispatch(store.ModifyActivity(key, props.familyID, props.person.guid, activity)),
+		onAddActivity: activity => dispatch(store.AddActivity(props.familyID, props.person.guid, activity))
+	};
+	return <PersonFormMarkup person={props.person} 
+		activity={activity} showActivity={true}
+		onDelete={person => dispatch(store.DeleteFamilyPerson(props.familyID, person))}
+		onChange={person => dispatch(store.UpdateFamilyPerson(props.familyID,person))} />
 }
 
-export interface IPersonFormMarkupProps{
+export interface IPersonFormMarkupProps {
 	person: IPerson;
 	onChange: (person: IPerson) => void;
 	onDelete: (person: IPerson) => void;
 	showActivity?: boolean;
+	activity?: IActivityListProps;
 }
 
 export function PersonFormMarkup(props: IPersonFormMarkupProps) {
@@ -60,7 +68,7 @@ export function PersonFormMarkup(props: IPersonFormMarkupProps) {
 		const newPhones = Array.from(state.person.phones);
 		newPhones[index] = phone;
 		setPerson("phones",newPhones);
-	}
+	};
 	const genders: IGender[] = ["Male","Female"];
 	const roles:IMemberFamilyRole[] = ["Father","Mother","Child","Grandparent","Aunt/Uncle","Neice/Nephew/Cousin","Other"];
 	return <S.Container>
@@ -128,7 +136,7 @@ export function PersonFormMarkup(props: IPersonFormMarkupProps) {
 				</S.Grid.Column>
 			</S.Grid>
 			<hr />
-			<ActivityList modifyActivity={() => null} activities={[]} onAddActivity={() => null} />
+			{props.showActivity && props.activity !== undefined ? <ActivityList {...props.activity} /> : ""}
 			<div style={{display:"flex", flexFlow:"row nowrap", justifyContent:"space-between"}}>
 				<S.Button primary onClick={() => props.onChange(state.person)}>Save Person</S.Button>
 				{state.confirmDelete ? <S.Button color="red">Are You Sure? Delete?</S.Button> : 
@@ -162,8 +170,8 @@ export function PersonList(props: IPersonListProps) {
 							{person.firstname} {person.lastname}
 						</Link>
 					</S.Table.Cell>
-					<PhoneCell phone={GetPrimaryContact(person.phones)} />
-					<EmailCell email={GetPrimaryContact(person.emails)} /> 
+					<PhoneCell phone={store.GetPrimaryContact(person.phones)} />
+					<EmailCell email={store.GetPrimaryContact(person.emails)} /> 
 				</S.Table.Row>)}
 			</S.Table.Body>
 		</S.Table>
