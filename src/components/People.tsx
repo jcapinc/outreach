@@ -20,9 +20,10 @@ export function PersonForm(props: IPersonFormProps){
 	const activity: IActivityListProps = {
 		activities: props.person.activity,
 		modifyActivity: (key, activity) => dispatch(store.ModifyActivity(key, props.familyID, props.person.guid, activity)),
+		deleteActivity: key => dispatch(store.DeleteActivity(key, props.familyID, props.person.guid)),
 		onAddActivity: activity => dispatch(store.AddActivity(props.familyID, props.person.guid, activity))
 	};
-	return <PersonFormMarkup person={props.person} 
+	return <PersonFormMarkup person={props.person}
 		activity={activity} showActivity={true}
 		onDelete={person => dispatch(store.DeleteFamilyPerson(props.familyID, person))}
 		onChange={person => dispatch(store.UpdateFamilyPerson(props.familyID,person))} />

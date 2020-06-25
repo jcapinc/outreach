@@ -170,7 +170,7 @@ function SelectPersonAndSaveFamily(familyID: string, personID: string, cb: (fami
 		}
 		const newFamily = cb(family, personKey);
 		return dispatch(SaveFamily(newFamily));
-	}
+	};
 }
 
 export function ModifyActivity(key: number, familyID: string, personID: string, newActivity: MT.IActivity): MyThunk {
