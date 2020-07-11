@@ -60,7 +60,8 @@
     "copy-backend": "copyfiles -a -u 1 ./backend/schema/* ./backend/schema.graphql ./backend/.env ./build/backend/",
     "build:react": "react-scripts build",
     "build:server": "tsc --build ./backend",
-    "clean": "rimraf build/*"
+    "clean": "rimraf build/*",
+    "prod": "node build/backend/server.js"
   },
   "eslintConfig": {
     "extends": "react-app"
