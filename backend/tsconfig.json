@@ -3,10 +3,10 @@
 		"module": "commonjs",
 		"esModuleInterop": true,
 		"allowSyntheticDefaultImports": true,
-		"allowJs": true
+		"allowJs": true,
+		"outDir": "../build/backend"
 	},
 	"files": [
 		"server.ts"
 	],
-	
 }

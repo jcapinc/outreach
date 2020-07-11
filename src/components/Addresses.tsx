@@ -11,7 +11,7 @@ export interface IAddressListProps{
 	onDeleteAddress: (index: number) => void;
 }
 
-const blankAddress = (address: Partial<IAddress> = {}) => ({...{
+const blankAddress = (address: Partial<IAddress> = {}): IAddress => ({...{
 	apptNo: "",
 	city: "",
 	guid: uniqid(),
@@ -65,7 +65,7 @@ export function AddressFormMarkup(props:IAddressFormMarkupProps){
 		</S.Form.Group>
 		<S.Form.Group widths="2">
 			{([["city","City"],["state","State"],["zip","Zip Code"]] as [keyof IAddress, string][]).map(([field, label], index) => 
-				<SimpleTextField label={label} onChange={change(field)} value={address[field]} key={index} />)}
+				<SimpleTextField label={label} onChange={change(field)} value={address[field]?.toString()} key={index} />)}
 		</S.Form.Group>
 		<S.Form.Group>
 			<S.FormField>

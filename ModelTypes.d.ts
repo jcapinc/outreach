@@ -30,7 +30,7 @@ export interface IPerson extends IDRecord, TouchRecord{
 export type IContactType = "Home" | "Office" | "Cell";
 
 export interface IContact extends IDRecord{
-	type: ContactType;
+	type: IContactType;
 	primary: boolean;
 }
 
