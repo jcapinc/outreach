@@ -5,7 +5,7 @@ import * as MT from '../../ModelTypes';
 import { diff } from 'deep-diff';
 import uniqid from 'uniqid';
 import { decode } from 'jsonwebtoken';
-
+import dayjs from 'dayjs';
 export interface LoginResponse{
 	jwt?: string;
 	error?: string
@@ -98,6 +98,7 @@ export function CreateFamily(surname: string, id: string = uniqid()): MyThunk {
 
 export function SaveFamily(family: MT.IFamily): MyThunk {
 	return async function(dispatch){
+		family.updated = dayjs().format('YYYY-MM-DD HH:mm:ss');
 		dispatch({type: "UPDATE_FAMILY", payload: family});
 		return dispatch(SendState());
 	}
@@ -126,10 +127,14 @@ export function GetPrimaryContact<T extends MT.IContact>(contactList:T[] | undef
 
 export function UpdateFamilyPerson(familyID: string, person:MT.IPerson): MyThunk{
 	return async function(dispatch,getState){
+		touchPerson.record(person);
 		const family = getState().currentState.families.find(family => family.guid === familyID);
 		if(family === undefined) return false;
 		const personKey = family.members.findIndex(member => member.guid === person.guid);
-		if(personKey === -1) family.members.push(person);
+		if(personKey === -1) {
+			family.members.push(person);
+			person.created = person.updated;
+		}
 		else family.members[personKey] = person;
 		let hasPrimary = false;
 		family.members = family.members.map(member => {
@@ -168,6 +173,7 @@ function SelectPersonAndSaveFamily(familyID: string, personID: string, cb: (fami
 			console.log("Error when selecting person, could not find person on family");
 			return false;
 		}
+		touchPerson.record(family.members[personKey]);
 		const newFamily = cb(family, personKey);
 		return dispatch(SaveFamily(newFamily));
 	};
@@ -192,4 +198,30 @@ export function DeleteActivity(ActivityID: number, familyID: string, personID: s
 		family.members[personKey].activity = family.members[personKey].activity.filter((member, index) => index !== ActivityID);
 		return family;
 	})
+}
+
+const touchPerson = {
+	record: function TouchPersonByRecord(person: MT.IPerson): MT.IPerson{
+		person.updated = dayjs().format('YYYY-MM-DD HH:mm:ss');
+		return person;
+	},
+	id: function TouchPersonByID(familyID: string, personID: string): MyThunk {
+		return function(dispatch, getState){
+			const [family, person] = getPersonByID(getState, familyID, personID);
+			touchPerson.record(person);
+			dispatch(SaveFamily(family));
+		}
+	},
+};
+
+function getPersonByID(getState: () => AppState, familyID: string, personID: string): [MT.IFamily, MT.IPerson] {
+	const family = getState().currentState.families.find(family => family.guid === familyID);
+	if (family === undefined) {
+		throw new Error("Error when selecting person, could not find family");
+	}
+	const person = family.members.find(person => person.guid === personID);
+	if (person === undefined) {
+		throw new Error("Erro when selecting, could not find person on family");
+	}
+	return [family, person];
 }

@@ -1,5 +1,4 @@
 import React from 'react';
-import { Navigation } from './Navigation';
 import { BrowserRouter as Router, Switch, Route, useParams, Link } from 'react-router-dom';
 import { Home } from './Home';
 import { useSelector } from 'react-redux';
@@ -8,6 +7,7 @@ import { Login } from './Login';
 import { FamilyForm } from './Families';
 import * as S from 'semantic-ui-react';
 import { PersonForm } from './People';
+import { Stale } from './Stale';
 
 export function App(){
 	const loggedIn = useSelector((state:AppState) => state.login.jwt !== undefined);
@@ -18,11 +18,20 @@ export function App(){
 				<Route exact path="/" component={Home} />
 				<Route exact path="/family/:familyid/member/:memberid" component={FamilyMemberRoute} />
 				<Route exact path="/family/:id" component={FamilyRoute} />
+				<Route exact path="/stale" component={StaleRoute} />
 				<Route component={_404} />
 			</Switch>
 		</> : 
 		<Login /> }
 	</Router>;
+}
+
+const Navigation: React.FC<{}> = () => {
+	return <S.Menu>
+		<div className="brand">Outreach</div>
+		<S.Menu.Item><Link to="/">Home</Link></S.Menu.Item>
+		<S.Menu.Item><Link to="/stale">Stale Contacts</Link></S.Menu.Item>
+	</S.Menu>;
 }
 
 function _404(){
@@ -46,10 +55,12 @@ function FamilyMemberRoute(){
 				membername={`${member.firstname} ${member.lastname}`}/>
 		</FamilyBreadCrumb>
 		<PersonForm familyID={familyid || ""} person={member} />
-	</>
+	</>;
 }
 
-export function FamilyRoute(){
+
+
+function FamilyRoute(){
 	let {id} = useParams();
 	const surname = useSelector((state: AppState) => state.currentState.families.find(rec => rec.guid === id)?.surname || "");
 	return <>
@@ -58,32 +69,17 @@ export function FamilyRoute(){
 	</>;
 }
 
-export function MemberRoute(){
-	let {id,memberid} = useParams();
-	const [surname,membername] = useSelector((state: AppState) => {
-		const family = state.currentState.families.find(fam => fam.guid === id);
-		if(family === undefined) return ["Unknown","Unknown"];
-		const member = family.members.find(member => member.guid === memberid);
-		return [family.surname,`${member?.firstname} ${member?.lastname}`];
-	});
-	return <>
-		<FamilyBreadCrumb familyid={id} familysurname={surname}>
-			<MemberBreadCrumb familyid={id} membername={membername} memberid={memberid} />
-		</FamilyBreadCrumb>
-	</>;
-}
-
-export interface IFamilyBreadCrumbProps{
+interface IFamilyBreadCrumbProps{
 	children?: React.ReactNode;
 	familyid: string | undefined;
 	familysurname: string | undefined;
 }
 
-export function FamilyBreadCrumb({children, familyid, familysurname}:IFamilyBreadCrumbProps){
+function FamilyBreadCrumb({children, familyid, familysurname}:IFamilyBreadCrumbProps){
 	return <div>
 		<S.Container>
 			<S.Breadcrumb>
-				<S.Breadcrumb.Section><Link to="/">Home</Link></S.Breadcrumb.Section>
+				<S.Breadcrumb.Section><Link to="/">Family</Link></S.Breadcrumb.Section>
 				<S.Breadcrumb.Divider />
 				<S.Breadcrumb.Section><Link to={"/family/" + familyid}>{familysurname} Family</Link></S.Breadcrumb.Section>
 				{children || ""}
@@ -93,16 +89,42 @@ export function FamilyBreadCrumb({children, familyid, familysurname}:IFamilyBrea
 	</div>;
 }
 
-export interface IMemberBreadCrumbProps{
+interface IMemberBreadCrumbProps{
 	familyid: string | undefined;
 	membername: string | undefined;
 	memberid: string | undefined;
 }
 
-export function MemberBreadCrumb({familyid, membername, memberid}: IMemberBreadCrumbProps){
+function MemberBreadCrumb({familyid, membername, memberid}: IMemberBreadCrumbProps){
 	const link = `/family/${familyid}/member/${memberid || ""}`;
 	return <>
 		<S.Breadcrumb.Divider />
 		<S.Breadcrumb.Section><Link to={link}>{membername}</Link></S.Breadcrumb.Section>
 	</>;
+}
+
+function StaleRoute(){
+	return <>
+		<BCContainer>
+			<S.Breadcrumb.Section>
+				<Link to={"/stale"}>Stale</Link>
+			</S.Breadcrumb.Section>
+		</BCContainer>
+		<Stale />
+	</>;
+}
+
+export interface BCContainerProps {
+	children: JSX.Element | JSX.Element[];
+}
+
+export function BCContainer({children}: BCContainerProps){
+	return <div>
+		<S.Container>
+			<S.Breadcrumb>
+				{children || ''}
+			</S.Breadcrumb>
+		</S.Container>
+		<hr />
+	</div>;
 }

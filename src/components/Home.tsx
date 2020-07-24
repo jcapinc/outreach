@@ -5,7 +5,7 @@ import * as families from './Families';
 import { useDispatch, useSelector } from 'react-redux';
 import { CreateFamily, AppState } from '../store';
 import uniqid from "uniqid";
-import { Redirect } from 'react-router-dom';
+import { Redirect, Link } from 'react-router-dom';
 
 export function Home(){
 	const dispatch = useDispatch();
@@ -29,13 +29,23 @@ export interface IHomeMarkupProps{
 }
 
 export function HomeMarkup(props: IHomeMarkupProps) {
-	return <S.Container>
-		<S.Header as="h2">Families</S.Header>
-		{props.families.length === 0 ? <S.Message>
-			<S.Message.Header>There are No Families</S.Message.Header>
-			Create a new family to get started.
-		</S.Message> : <families.FamilyList families={props.families} />}
-		<S.Header as="h3">Add New Family</S.Header>
-		<families.CreateFamilyForm onSubmit={props.onCreateFamily} />
-	</S.Container>;
+	return <>
+		<div>
+			<S.Container>
+				<S.Breadcrumb>
+					<S.Breadcrumb.Section><Link to="/">Family</Link></S.Breadcrumb.Section>
+				</S.Breadcrumb>
+			</S.Container>
+			<hr />
+		</div>
+		<S.Container>
+			<S.Header as="h2">Families</S.Header>
+			{props.families.length === 0 ? <S.Message>
+				<S.Message.Header>There are No Families</S.Message.Header>
+				Create a new family to get started.
+			</S.Message> : <families.FamilyList families={props.families} />}
+			<S.Header as="h3">Add New Family</S.Header>
+			<families.CreateFamilyForm onSubmit={props.onCreateFamily} />
+		</S.Container>
+	</>;
 }

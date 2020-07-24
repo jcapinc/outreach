@@ -72,6 +72,11 @@ export function PersonFormMarkup(props: IPersonFormMarkupProps) {
 	};
 	const genders: IGender[] = ["Male","Female"];
 	const roles:IMemberFamilyRole[] = ["Father","Mother","Child","Grandparent","Aunt/Uncle","Neice/Nephew/Cousin","Other"];
+
+	const saveClick = () => {
+		props.onChange(state.person);
+		alert("Person Saved");
+	};
 	return <S.Container>
 		<S.Form>
 			<S.Grid>
@@ -139,7 +144,7 @@ export function PersonFormMarkup(props: IPersonFormMarkupProps) {
 			<hr />
 			{props.showActivity && props.activity !== undefined ? <ActivityList {...props.activity} /> : ""}
 			<div style={{display:"flex", flexFlow:"row nowrap", justifyContent:"space-between"}}>
-				<S.Button primary onClick={() => props.onChange(state.person)}>Save Person</S.Button>
+				<S.Button primary onClick={saveClick}>Save Person</S.Button>
 				{state.confirmDelete ? <S.Button color="red">Are You Sure? Delete?</S.Button> : 
 					<S.Button secondary onClick={() => setState({...state, confirmDelete: true})}>Delete Person</S.Button>}
 			</div>

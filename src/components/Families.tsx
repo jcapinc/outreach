@@ -139,6 +139,11 @@ export function FamilyFormMarkup(props: IFamilyFormMarkupProps){
 		setState(newstate);
 		props.onSave(newstate.family);
 	}
+
+	const saveButtonClick = () => {
+		props.onSave(state.family);
+		alert("Family Saved");
+	};
 	return <S.Container>
 		{state.editSurname ? <>
 			<S.Input label="Surname" value={state.family.surname} onChange={updateRecord("surname")} /> 
@@ -159,7 +164,7 @@ export function FamilyFormMarkup(props: IFamilyFormMarkupProps){
 		<AddPersonForm onSubmit={addPerson}/>
 		<hr />
 		<div style={{display: "flex", justifyContent: "space-between"}}>
-			<Button primary onClick={() => props.onSave(state.family)}>Save</Button>
+			<Button primary onClick={saveButtonClick}>Save Family</Button>
 			{state.confirmDelete ? 
 				<Button onClick={() => props.onDelete(state.family)} color="red" disabled={!state.allowDelete}>Are You Sure You Want To Delete?</Button> : 
 				<Button secondary onClick={deleteClick}>Delete Family</Button>}
