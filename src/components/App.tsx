@@ -1,8 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Switch, Route, useParams, Link } from 'react-router-dom';
 import { Home } from './Home';
-import { useSelector } from 'react-redux';
-import { AppState} from '../store';
+import { useSelector, useDispatch } from 'react-redux';
+import { AppState, logout} from '../store';
 import { Login } from './Login';
 import { FamilyForm } from './Families';
 import * as S from 'semantic-ui-react';
@@ -19,6 +19,7 @@ export function App(){
 				<Route exact path="/family/:familyid/member/:memberid" component={FamilyMemberRoute} />
 				<Route exact path="/family/:id" component={FamilyRoute} />
 				<Route exact path="/stale" component={StaleRoute} />
+				<Route exact path="/logout" component={Logout} />
 				<Route component={_404} />
 			</Switch>
 		</> : 
@@ -27,10 +28,18 @@ export function App(){
 }
 
 const Navigation: React.FC<{}> = () => {
+	const dispatch = useDispatch();
 	return <S.Menu>
 		<div className="brand">Outreach</div>
 		<S.Menu.Item><Link to="/">Home</Link></S.Menu.Item>
 		<S.Menu.Item><Link to="/stale">Stale Contacts</Link></S.Menu.Item>
+		<S.Menu.Menu position="right">
+			<S.Menu.Item>
+				<a href="/login" onClick={() => {
+					dispatch(logout());
+				}}>Logout</a>
+			</S.Menu.Item>
+		</S.Menu.Menu>
 	</S.Menu>;
 }
 
@@ -126,5 +135,13 @@ export function BCContainer({children}: BCContainerProps){
 			</S.Breadcrumb>
 		</S.Container>
 		<hr />
+	</div>;
+}
+
+function Logout(){
+	useDispatch()(logout());
+
+	return <div>
+		<S.Header>Logging Out</S.Header>
 	</div>;
 }

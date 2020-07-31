@@ -6,7 +6,8 @@ import { diff } from 'deep-diff';
 import uniqid from 'uniqid';
 import { decode } from 'jsonwebtoken';
 import dayjs from 'dayjs';
-export interface LoginResponse{
+
+export interface LoginResponse {
 	jwt?: string;
 	error?: string
 }
