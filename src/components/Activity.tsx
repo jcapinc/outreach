@@ -81,8 +81,8 @@ export function ActivityDisplay({activity, updateActivityRecord, deleteActivityR
 	};
 	return <S.Segment style={{display:'flex', flexFlow:'row nowrap', alignItems:'flex-start'}}>
 		<div style={{flex:'1 0', padding: '5px'}}>
-			<p dangerouslySetInnerHTML={{__html: sanitize(activity.body)}}></p>
 			<div style={{fontStyle:'italic'}}>{activity.creator} - {activity.created}</div>
+			<p dangerouslySetInnerHTML={{__html: sanitize(activity.body)}}></p>
 		</div>
 		<S.Button.Group style={{gridArea:'right'}}>
 			<S.Button onClick={() => setEdit(true)} icon="edit" />

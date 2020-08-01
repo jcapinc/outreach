@@ -1,21 +1,26 @@
-import { decode } from 'jsonwebtoken';
 import React from 'react';
+import * as store from '../store';
+import * as S from 'semantic-ui-react';
+import dayjs from 'dayjs';
+import uniqid from 'uniqid';
+import { decode } from 'jsonwebtoken';
 import { useDispatch, useSelector } from 'react-redux';
 import { Redirect, Link } from 'react-router-dom';
-import * as S from 'semantic-ui-react';
 import { Button, Input } from 'semantic-ui-react';
-import uniqid from 'uniqid';
 import { IFamily, IPerson, IUserRecord } from '../../ModelTypes';
-import { AppState, DeleteFamily, SaveFamily, GetPrimaryMember, GetPrimaryContact, DeleteFamilyPerson } from '../store';
 import { AddPersonForm, PersonList, PersonFormMarkup } from './People';	
-import dayjs from 'dayjs';
 
-const emptyPersonRecord = (firstname: string, lastname: string, creatorID: string, primary = false): IPerson => ({
+const emptyPersonRecord = (
+	firstname: string, 
+	lastname: string, 
+	creatorID: string, 
+	primary = false
+): IPerson => ({
 	activity: [],
 	addresses: [],
 	created: dayjs().subtract(20,"year").format("YYYY-MM-DD"),
 	creator: creatorID,
-	dob: dayjs().subtract(18,"year").format("YYYY-MM-DD"),
+	dob: dayjs().subtract(200,"year").format("YYYY-MM-DD"),
 	emails: [],
 	familyPrimary: primary,
 	firstname, lastname,
@@ -47,41 +52,52 @@ export interface IFamilyListProps{
 }
 
 export function FamilyList({families}: IFamilyListProps){
-	return <>
-		<S.Responsive>
-			<S.Table>
-				<S.Table.Header>
-					<S.Table.Row>
-						<S.Table.HeaderCell>Surname</S.Table.HeaderCell>
-						<S.Table.HeaderCell>Primary Contact</S.Table.HeaderCell>
-						<S.Table.HeaderCell>Primary Contact Phone</S.Table.HeaderCell>
-						<S.Table.HeaderCell>Primary Contact Email</S.Table.HeaderCell>
-						<S.Table.HeaderCell>Member Count</S.Table.HeaderCell>
-					</S.Table.Row>
-				</S.Table.Header>
-				<S.Table.Body>
-					{families.map(family => {
-						const primary = GetPrimaryMember(family.members);
-						const primaryEmail = GetPrimaryContact(primary?.emails);
-						const primaryPhone = GetPrimaryContact(primary?.phones);
-						return <S.Table.Row key={family.guid}>
-							<S.Table.Cell><Link to={"/family/"+family.guid}>{family.surname}</Link></S.Table.Cell>
-							<S.Table.Cell>{primary ? `${primary.firstname} ${primary.lastname}` : <i>No Primary Contact</i>}</S.Table.Cell>
-							<S.Table.Cell>{primaryPhone ? <a href={"tel:" + primaryPhone.number}>{primaryPhone.number}</a> : <i>No Primary Phone</i>}</S.Table.Cell>
-							<S.Table.Cell>{primaryEmail ? <a href={"mailto:" + primaryEmail.address}>{primaryEmail.address}</a> : <i>No Primary Email</i>}</S.Table.Cell>
-							<S.Table.Cell>{family.members.length}</S.Table.Cell>
-					</S.Table.Row>;
-					})}
-				</S.Table.Body>
-			</S.Table>
-		</S.Responsive>
-	</>;
+	return <S.Responsive>
+		<S.Table>
+			<S.Table.Header>
+				<S.Table.Row>
+					<S.Table.HeaderCell>Surname</S.Table.HeaderCell>
+					<S.Table.HeaderCell>Primary Contact</S.Table.HeaderCell>
+					<S.Table.HeaderCell>Primary Contact Phone</S.Table.HeaderCell>
+					<S.Table.HeaderCell>Primary Contact Email</S.Table.HeaderCell>
+					<S.Table.HeaderCell>Member Count</S.Table.HeaderCell>
+				</S.Table.Row>
+			</S.Table.Header>
+			<S.Table.Body>
+				{families.map(family => {
+					const primary = store.GetPrimaryMember(family.members);
+					const primaryEmail = store.GetPrimaryContact(primary?.emails);
+					const primaryPhone = store.GetPrimaryContact(primary?.phones);
+					return <S.Table.Row key={family.guid}>
+						<S.Table.Cell>
+							<Link to={"/family/"+family.guid}>{family.surname}</Link>
+						</S.Table.Cell>
+						<S.Table.Cell>
+							{primary 
+								? `${primary.firstname} ${primary.lastname}` 
+								: <i>No Primary Contact</i>}
+						</S.Table.Cell>
+						<S.Table.Cell>
+							{primaryPhone 
+								? <a href={"tel:" + primaryPhone.number}>{primaryPhone.number}</a> 
+								: <i>No Primary Phone</i>}
+						</S.Table.Cell>
+						<S.Table.Cell>
+							{primaryEmail 
+								? <a href={"mailto:" + primaryEmail.address}>{primaryEmail.address}</a> 
+								: <i>No Primary Email</i>}
+						</S.Table.Cell>
+						<S.Table.Cell>{family.members.length}</S.Table.Cell>
+				</S.Table.Row>})}
+			</S.Table.Body>
+		</S.Table>
+	</S.Responsive>;
 }
 
 export function FamilyForm({id}:{id: string}){
-	const [family, creator] = useSelector((state:AppState) => [
+	const [family, creator] = useSelector((state:store.AppState) => [
 		state.currentState.families.find(record => record.guid === id),
-		(decode(state.login.jwt || "") as IUserRecord).guid
+		(decode(state.login.jwt || "") as IUserRecord).guid || ""
 	]);
 	const [state, setState] = React.useState({goHome: false});
 	const dispatch = useDispatch();
@@ -90,10 +106,14 @@ export function FamilyForm({id}:{id: string}){
 		<S.Message.Header>Family Not Found</S.Message.Header>
 		Could not find this family
 	</S.Message>;
+	const onDelete = (family: IFamily) => { 
+		dispatch(store.DeleteFamily(family)); 
+		setState({...state, goHome: true}); 
+	};
 	return <FamilyFormMarkup family={family} creator={creator} 
-		onDeleteMember={(familyID: string, member: IPerson) => dispatch(DeleteFamilyPerson(familyID, member))}
-		onSave={(family) => dispatch(SaveFamily(family))}
-		onDelete={(family) => { dispatch(DeleteFamily(family)); setState({...state, goHome: true}) }}/>;
+		onDeleteMember={(familyID, member) => dispatch(store.DeleteFamilyPerson(familyID, member))}
+		onSave={(family) => dispatch(store.SaveFamily(family))}
+		onDelete={onDelete}/>;
 }
 
 export interface IFamilyFormMarkupProps {
@@ -119,7 +139,7 @@ export function FamilyFormMarkup(props: IFamilyFormMarkupProps){
 	const updateRecord = (key: keyof IFamily) => (e: React.ChangeEvent<HTMLInputElement>) => 
 		setState({...state,family: { ...state.family, [key]: e.target.value}});
 
-		const primaryMember = GetPrimaryMember(state.family.members);
+	const primaryMember = store.GetPrimaryMember(state.family.members);
 
 	const primaryMemberOnChange = (person: IPerson) => {
 		const newArray = Array.from(state.family.members);

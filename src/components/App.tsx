@@ -19,7 +19,6 @@ export function App(){
 				<Route exact path="/family/:familyid/member/:memberid" component={FamilyMemberRoute} />
 				<Route exact path="/family/:id" component={FamilyRoute} />
 				<Route exact path="/stale" component={StaleRoute} />
-				<Route exact path="/logout" component={Logout} />
 				<Route component={_404} />
 			</Switch>
 		</> : 
@@ -35,7 +34,7 @@ const Navigation: React.FC<{}> = () => {
 		<S.Menu.Item><Link to="/stale">Stale Contacts</Link></S.Menu.Item>
 		<S.Menu.Menu position="right">
 			<S.Menu.Item>
-				<a href="/login" onClick={() => {
+				<a href="/" onClick={() => {
 					dispatch(logout());
 				}}>Logout</a>
 			</S.Menu.Item>
@@ -135,13 +134,5 @@ export function BCContainer({children}: BCContainerProps){
 			</S.Breadcrumb>
 		</S.Container>
 		<hr />
-	</div>;
-}
-
-function Logout(){
-	useDispatch()(logout());
-
-	return <div>
-		<S.Header>Logging Out</S.Header>
 	</div>;
 }
