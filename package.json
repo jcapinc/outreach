@@ -44,7 +44,7 @@
     "redux": "^4.0.5",
     "redux-thunk": "^2.3.0",
     "rimraf": "^3.0.2",
-    "sanitize-html": "^1.27.0",
+    "sanitize-html": "^2.3.2",
     "semantic-ui-react": "^0.88.2",
     "sqlite3": "^4.1.1",
     "typescript": "^3.7.5",
